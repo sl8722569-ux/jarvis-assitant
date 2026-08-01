@@ -1,10 +1,11 @@
 {
-  "name": "JARVIS",
+  "name": "J.A.R.V.I.S [EARLY ACCESS]",
   "version": "3.0.0-early-access",
   "phase": "1-early-access",
   "project": {
-    "official_url": "https://github.com/YOUR_USERNAME/jarvis-assistant",
-    "share_text": "Try JARVIS — a lightweight personal Windows AI assistant (Early Access / Phase 1)."
+    "official_url": "https://github.com/vvansh25/jarvis-assitant",
+    "share_text": "J.A.R.V.I.S [EARLY ACCESS] \u2014 lightweight Windows AI assistant (Phase 1).",
+    "display_name": "J.A.R.V.I.S [EARLY ACCESS]"
   },
   "activation_phrase": "jarvis activate",
   "activation_aliases": [
@@ -21,7 +22,11 @@
   "language": "en",
   "languages": {
     "primary": "en",
-    "supported": ["en", "hi", "pa"],
+    "supported": [
+      "en",
+      "hi",
+      "pa"
+    ],
     "auto_detect": true
   },
   "conversation": {
@@ -62,27 +67,37 @@
   },
   "ai_targets": {
     "chatgpt": {
-      "urls": ["https://chatgpt.com/"],
+      "urls": [
+        "https://chatgpt.com/"
+      ],
       "app_paths": [],
       "process_names": []
     },
     "gemini": {
-      "urls": ["https://gemini.google.com/app"],
+      "urls": [
+        "https://gemini.google.com/app"
+      ],
       "app_paths": [],
       "process_names": []
     },
     "copilot": {
-      "urls": ["https://copilot.microsoft.com/"],
+      "urls": [
+        "https://copilot.microsoft.com/"
+      ],
       "app_paths": [],
       "process_names": []
     },
     "claude": {
-      "urls": ["https://claude.ai/"],
+      "urls": [
+        "https://claude.ai/"
+      ],
       "app_paths": [],
       "process_names": []
     },
     "grok": {
-      "urls": ["https://grok.x.ai/"],
+      "urls": [
+        "https://grok.x.ai/"
+      ],
       "app_paths": [],
       "process_names": []
     }
