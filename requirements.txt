@@ -1,0 +1,13 @@
+# JARVIS Phase 1 — Python dependencies (keep lean for low-end PCs)
+# Python 3.11+ recommended
+
+SpeechRecognition>=3.10.0   # Speech-to-text (uses Google free API when online)
+pyttsx3>=2.90               # Offline text-to-speech (Windows SAPI)
+comtypes>=1.2.0             # Windows COM support for TTS
+pywin32>=306                # Windows APIs
+requests>=2.31.0            # Optional cloud AI HTTP calls
+psutil>=5.9.0               # CPU / RAM / battery metrics
+Pillow>=10.0.0              # Optional image helpers (kept light)
+
+# Optional (install if voice fails):
+# pyaudio>=0.2.14

@@ -1,0 +1,113 @@
+{
+  "name": "JARVIS",
+  "version": "3.0.0-early-access",
+  "phase": "1-early-access",
+  "project": {
+    "official_url": "https://github.com/YOUR_USERNAME/jarvis-assistant",
+    "share_text": "Try JARVIS — a lightweight personal Windows AI assistant (Early Access / Phase 1)."
+  },
+  "activation_phrase": "jarvis activate",
+  "activation_aliases": [
+    "jarvis activate",
+    "hey jarvis",
+    "ok jarvis",
+    "jarvis online",
+    "open jarvis",
+    "start jarvis"
+  ],
+  "hotkey": "ctrl+shift+j",
+  "greeting": "Yes sir, I am online. How may I assist you?",
+  "personality_mode": "friendly",
+  "language": "en",
+  "languages": {
+    "primary": "en",
+    "supported": ["en", "hi", "pa"],
+    "auto_detect": true
+  },
+  "conversation": {
+    "enabled": true,
+    "followup_after_activate": true,
+    "activate_idle_turns": 4,
+    "conversation_idle_turns": 8
+  },
+  "ui": {
+    "theme": "midnight_hud",
+    "animation": "hud",
+    "animations_enabled": true
+  },
+  "voice": {
+    "enabled": true,
+    "rate": 165,
+    "volume": 1.0,
+    "style": "jarvis",
+    "prefer_male": true,
+    "room_boost": true
+  },
+  "listen_timeout_sec": 7,
+  "phrase_time_limit_sec": 10,
+  "energy_threshold": 350,
+  "idle_sleep_sec": 0.5,
+  "features": {
+    "wake_word": true,
+    "hotkey": true,
+    "voice_listen": true,
+    "voice_speak": true
+  },
+  "on_activate": {
+    "open_app_window": true,
+    "open_web_ai": false,
+    "web_ai_provider": "chatgpt",
+    "speak_greeting": true,
+    "start_listening": true
+  },
+  "ai_targets": {
+    "chatgpt": {
+      "urls": ["https://chatgpt.com/"],
+      "app_paths": [],
+      "process_names": []
+    },
+    "gemini": {
+      "urls": ["https://gemini.google.com/app"],
+      "app_paths": [],
+      "process_names": []
+    },
+    "copilot": {
+      "urls": ["https://copilot.microsoft.com/"],
+      "app_paths": [],
+      "process_names": []
+    },
+    "claude": {
+      "urls": ["https://claude.ai/"],
+      "app_paths": [],
+      "process_names": []
+    },
+    "grok": {
+      "urls": ["https://grok.x.ai/"],
+      "app_paths": [],
+      "process_names": []
+    }
+  },
+  "ai_api": {
+    "enabled": false,
+    "provider": "openai_compatible",
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "",
+    "model": "gpt-4o-mini",
+    "temperature": 0.55,
+    "max_tokens": 400
+  },
+  "gemini_api": {
+    "enabled": false,
+    "api_key": "",
+    "model": "gemini-1.5-flash"
+  },
+  "startup_assistant": {
+    "enabled": false,
+    "apps": []
+  },
+  "paths": {
+    "logs": "logs",
+    "data": "data"
+  },
+  "safe_mode": true
+}

@@ -1,0 +1,71 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+env/
+ENV/
+
+# --- IDE / editor ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# --- Secrets & private config (never publish) ---
+.env
+.env.*
+!.env.example
+**/secrets.json
+**/credentials.json
+config.local.json
+# Local runtime config may contain API keys — publish config.example.json only
+config.json
+# Keep example configs; ignore accidental secret dumps
+*secret*
+*credentials*
+*.pem
+*.key
+
+# --- User runtime data (personal) ---
+data/permissions.json
+data/startup_backup.json
+data/*.local.json
+data/user/
+
+# --- Logs & reports (may contain local paths) ---
+logs/
+*.log
+
+# --- Local caches / temp ---
+.cache/
+tmp/
+temp/
+*.tmp
+
+# --- Optional large / local assets ---
+assets/private/
+*.wav
+*.mp3
+
+# --- Local tooling (PortableGit etc.) ---
+.tools/
+
+# --- Installer / packaging leftovers ---
+*.msi
+*.exe
+!scripts/**
+*.spec
