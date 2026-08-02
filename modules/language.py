@@ -87,12 +87,22 @@ def is_exit_phrase(text: str) -> bool:
     t = (text or "").lower().strip()
     patterns = (
         r"\b(goodbye|good bye|bye bye|standby|stand by|go to sleep|deactivate|"
-        r"stop conversation|end conversation|exit conversation|stop talking|"
+        r"jarvis standby|stop conversation|end conversation|exit conversation|stop talking|"
         r"that's all|that is all|cancel conversation)\b",
         r"\b(bas karo|band karo|band kar do|chup ho jao|ab bas|alvida|सो जाओ|बंद करो|बात खत्म)\b",
         r"\b(bas kar|band kar|gal baat khatam|ruko|stop kar|ਬੰਦ ਕਰੋ|ਬਸ ਕਰੋ)\b",
     )
     return any(re.search(p, t) for p in patterns)
+
+
+def is_standby_phrase(text: str) -> bool:
+    """Phase 2: explicit Jarvis Standby."""
+    t = (text or "").lower().strip()
+    t = re.sub(r"[^\w\s]", " ", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    if "jarvis standby" in t or "jarvis stand by" in t:
+        return True
+    return is_exit_phrase(text)
 
 
 def phrase(key: str, lang: str, **kwargs: Any) -> str:

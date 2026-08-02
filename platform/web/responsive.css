@@ -1,0 +1,30 @@
+/* Phase 2 — future web/responsive layout stubs (not required for desktop app) */
+:root {
+  --jarvis-bg: #05080f;
+  --jarvis-accent: #5ce1ff;
+  --jarvis-sidebar-width: 320px;
+}
+
+.jarvis-app { display: flex; min-height: 100vh; background: var(--jarvis-bg); color: #e8f0ff; }
+.jarvis-sidebar { width: var(--jarvis-sidebar-width); max-width: 40vw; }
+.jarvis-main { flex: 1; min-width: 0; }
+.jarvis-floating { position: fixed; bottom: 1rem; right: 1rem; width: min(360px, 92vw); z-index: 9999; }
+.jarvis-compact .jarvis-sidebar { display: none; }
+
+/* Mobile */
+@media (max-width: 720px) {
+  .jarvis-app { flex-direction: column; }
+  .jarvis-sidebar { width: 100%; max-width: none; order: 2; }
+  .jarvis-main { order: 1; }
+  .jarvis-floating { width: calc(100vw - 1rem); right: 0.5rem; left: 0.5rem; }
+}
+
+/* Tablet */
+@media (min-width: 721px) and (max-width: 1100px) {
+  .jarvis-sidebar { width: 260px; }
+}
+
+/* Landscape tablet */
+@media (orientation: landscape) and (max-height: 600px) {
+  .jarvis-app { flex-direction: row; }
+}

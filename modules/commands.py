@@ -40,6 +40,11 @@ class CommandRouter:
         on_conversation: Callable[[], None] | None = None,
         on_theme: Callable[[str], None] | None = None,
         set_ui_state: Callable[[str], None] | None = None,
+        win=None,
+        smart=None,
+        plugins=None,
+        on_usage_mode: Callable[[str], None] | None = None,
+        on_layout: Callable[[str], None] | None = None,
     ):
         self.ops = ops
         self.ai = ai
@@ -59,6 +64,11 @@ class CommandRouter:
         self.on_conversation = on_conversation
         self.on_theme = on_theme
         self.set_ui_state = set_ui_state
+        self.win = win
+        self.smart = smart
+        self.plugins = plugins
+        self.on_usage_mode = on_usage_mode
+        self.on_layout = on_layout
 
     def handle(self, text: str) -> str:
         raw = (text or "").strip()
@@ -81,15 +91,105 @@ class CommandRouter:
                 self.on_conversation()
             return ""
 
-        # Exit
+        # Phase 2: Jarvis Standby + exit
         if re.search(
-            r"\b(goodbye|go to sleep|deactivate|exit jarvis|standby|stop conversation|"
-            r"end conversation|bas karo|band karo|alvida)\b",
+            r"\b(jarvis standby|jarvis stand by|goodbye|go to sleep|deactivate|exit jarvis|standby|"
+            r"stop conversation|end conversation|bas karo|band karo|alvida)\b",
             t,
         ):
             if self.on_exit:
                 self.on_exit()
             return ""
+
+        # Usage modes
+        if re.search(r"\b(full jarvis mode|full mode)\b", t):
+            if self.on_usage_mode:
+                return self.on_usage_mode("full") or "Full Jarvis Mode on."
+            return "Full Jarvis Mode."
+        if re.search(r"\b(sidebar companion|sidebar mode)\b", t):
+            if self.on_usage_mode:
+                return self.on_usage_mode("sidebar") or "Sidebar Companion Mode on."
+            return "Sidebar Companion Mode."
+        if re.search(r"\b(voice only mode|voice mode)\b", t):
+            if self.on_usage_mode:
+                return self.on_usage_mode("voice_only") or "Voice Only Mode on."
+            return "Voice Only Mode."
+
+        # Layout
+        if re.search(r"\b(floating assistant|float mode)\b", t):
+            if self.on_layout:
+                return self.on_layout("floating") or "Floating assistant."
+        if re.search(r"\b(compact mode)\b", t):
+            if self.on_layout:
+                return self.on_layout("compact") or "Compact mode."
+        if re.search(r"\b(performance mode ui|light mode|dark mode)\b", t) or t in (
+            "performance ui",
+            "enable light mode",
+            "enable dark mode",
+        ):
+            if "light" in t and self.on_theme:
+                self.on_theme("light_mode")
+                return "Light mode theme applied."
+            if "dark" in t and self.on_theme:
+                self.on_theme("midnight_hud")
+                return "Dark mode theme applied."
+            if "performance" in t:
+                return "Performance mode: animations can be disabled in Settings. Prefer compact layout."
+
+        # Plugins first (fast route)
+        if self.plugins:
+            plug = self.plugins.try_handle(raw)
+            if plug:
+                return plug
+            if re.search(r"\b(list plugins|plugins|skills)\b", t):
+                return self.plugins.list_plugins()
+
+        # Smart tips (only when asked)
+        if self.smart:
+            tip = self.smart.handle(raw)
+            if tip:
+                return tip
+
+        # Windows assistant extras
+        if self.win:
+            if t.startswith("note ") or t.startswith("remember "):
+                body = raw.split(" ", 1)[1] if " " in raw else ""
+                return self.win.add_note(body)
+            if re.search(r"\b(show notes|read notes|my notes)\b", t):
+                return self.win.read_notes()
+            if re.search(r"\b(clipboard|what.?s on clipboard|show clipboard)\b", t):
+                return self.win.clipboard_get()
+            m = re.search(r"\b(?:copy|clipboard set)\s+(.+)$", t)
+            if m:
+                return self.win.clipboard_set(m.group(1))
+            m = re.search(r"\b(?:set )?timer\s+(\d+)\s*(seconds|second|sec|s|minutes|minute|min|m)?\b", t)
+            if m:
+                n = int(m.group(1))
+                unit = (m.group(2) or "sec").lower()
+                secs = n * 60 if unit.startswith("m") else n
+                return self.win.set_timer(secs, "jarvis")
+            if "calendar" in t and any(w in t for w in ("open", "show", "launch")):
+                return self.win.open_calendar()
+            if re.search(r"\bbrightness\s+(\d{1,3})\b", t):
+                return self.win.brightness(percent=int(re.search(r"(\d{1,3})", t).group(1)))
+            if "brightness up" in t:
+                return self.win.brightness(direction="up")
+            if "brightness down" in t:
+                return self.win.brightness(direction="down")
+            if "screenshot" in t:
+                ok, msg = self.permissions.require("screen")
+                if not ok:
+                    return msg
+                return self.win.screenshot()
+
+        # File share via WhatsApp
+        m = re.search(r"\b(?:send|share)\s+(?:this\s+)?file\s+(?:through|via|on)\s+whatsapp(?:\s+web)?\s*(.*)$", t)
+        if m:
+            path = m.group(1).strip() or "the selected file"
+            prep = self.share.prepare_whatsapp_message(
+                f"Sharing file: {path} (open WhatsApp Web and attach manually after confirm)."
+            )
+            return prep + "\nAfter confirm, attach the file yourself in WhatsApp — Jarvis never auto-sends files."
         if re.search(r"\b(pause jarvis|pause features)\b", t) or re.fullmatch(r"pause", t):
             if self.on_pause:
                 self.on_pause()
@@ -159,13 +259,15 @@ class CommandRouter:
 
         # Theme
         m = re.search(
-            r"\btheme\s+(midnight_hud|ember_core|forest_soft|arctic_glass|neon_play)\b", t
+            r"\btheme\s+(midnight_hud|ember_core|forest_soft|arctic_glass|neon_play|"
+            r"armor_ai|green_power|shield_hero|cosmic_energy|speed_tech|light_mode)\b",
+            t,
         )
         if m:
             if self.on_theme:
                 self.on_theme(m.group(1))
             return f"Theme set to {m.group(1)}."
-        if "list themes" in t or "themes" == t:
+        if "list themes" in t or t == "themes":
             from .themes import list_themes
 
             return list_themes()
@@ -343,6 +445,7 @@ class CommandRouter:
             "microphone": "microphone",
             "mic": "microphone",
             "voice": "microphone",
+            "camera": "camera",
             "file_access": "file_access",
             "files": "file_access",
             "file": "file_access",
@@ -360,6 +463,8 @@ class CommandRouter:
             "cloud_ai": "cloud_ai",
             "cloud": "cloud_ai",
             "ai": "cloud_ai",
+            "notifications": "notifications",
+            "notification": "notifications",
         }
         if p in aliases:
             return aliases[p]

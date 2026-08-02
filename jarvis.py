@@ -42,6 +42,11 @@ from modules.voice_diagnostics import (
     open_windows_mic_settings,
     run_full_diagnostics,
 )
+from modules.windows_assistant import WindowsAssistant
+from modules.smart_assistant import SmartAssistant
+from modules.plugins import PluginManager
+from modules.plugins.builtin import load_builtin_plugins
+from modules.language import is_standby_phrase
 
 
 class Jarvis:
@@ -49,7 +54,7 @@ class Jarvis:
         self.root = ROOT
         self.cfg = Config(self.root)
         self.log = JarvisLogger(self.root)
-        self.log.info("JARVIS v3 starting…")
+        self.log.info("J.A.R.V.I.S Phase 2 starting…")
 
         data_dir = self.root / "data"
         data_dir.mkdir(exist_ok=True)
@@ -60,6 +65,7 @@ class Jarvis:
         lang_cfg = self.cfg.get("languages") or {}
         ui_cfg = self.cfg.get("ui") or {}
         primary = normalize_lang(lang_cfg.get("primary") or "en")
+        pref_mode = (self.cfg.get("preferred_usage_mode") or ui_cfg.get("usage_mode") or "full")
 
         self.state = JarvisState(
             wake_word=bool(feats.get("wake_word", True)),
@@ -76,6 +82,11 @@ class Jarvis:
             room_boost=bool(vcfg.get("room_boost", True)),
             status_message="Standby — say Jarvis Activate",
             ui_state="standby",
+            usage_mode=str(pref_mode),
+            ui_layout=str(ui_cfg.get("layout") or "full"),
+            performance_mode=bool(ui_cfg.get("performance_mode", False)),
+            light_mode=bool(ui_cfg.get("light_mode", False)),
+            preferred_mode_saved=bool(self.cfg.get("preferred_usage_mode")),
         )
 
         self.providers = AIProviders(self.cfg.data, self.permissions, self.log)
@@ -87,6 +98,10 @@ class Jarvis:
         self.files = FileAssistant(self.permissions, self.log)
         self.share = ShareAssistant(self.permissions, self.log)
         self.web = WebOps(self.permissions, self.log)
+        self.win = WindowsAssistant(self.root, self.log)
+        self.smart = SmartAssistant()
+        self.plugins = PluginManager()
+        load_builtin_plugins(self.plugins)
 
         self.tts = TTSEngine(
             rate=int(vcfg.get("rate", 165)),
@@ -104,6 +119,7 @@ class Jarvis:
         self.session_lock = threading.Lock()
         self._listen_thread: threading.Thread | None = None
         self.conv_cfg = self.cfg.get("conversation") or {}
+        self._awaiting_mode_choice = False
 
         self.router = CommandRouter(
             self.ops,
@@ -124,6 +140,11 @@ class Jarvis:
             on_conversation=self.start_conversation_mode,
             on_theme=self.set_theme,
             set_ui_state=self.set_ui_state,
+            win=self.win,
+            smart=self.smart,
+            plugins=self.plugins,
+            on_usage_mode=self.set_usage_mode,
+            on_layout=self.set_layout,
         )
 
         self.ui = JarvisUI(
@@ -275,13 +296,55 @@ class Jarvis:
 
     def save_settings(self) -> None:
         self.cfg.data["personality_mode"] = self.state.personality
+        self.cfg.data["preferred_usage_mode"] = self.state.usage_mode
         ui = self.cfg.data.setdefault("ui", {})
         ui["theme"] = self.state.theme
         ui["animation"] = self.state.animation
         ui["animations_enabled"] = self.state.animations_enabled
+        ui["layout"] = self.state.ui_layout
+        ui["usage_mode"] = self.state.usage_mode
+        ui["performance_mode"] = self.state.performance_mode
+        ui["light_mode"] = self.state.light_mode
         self.cfg.save()
         self.permissions.save()
         self.ui.append_system("Settings saved.")
+
+    def set_usage_mode(self, mode: str) -> str:
+        mode = (mode or "full").lower().strip()
+        if mode not in ("full", "sidebar", "voice_only"):
+            return "Choose: full, sidebar, or voice_only."
+        self.state.usage_mode = mode
+        self.state.preferred_mode_saved = True
+        self.cfg.data["preferred_usage_mode"] = mode
+        self.cfg.data.setdefault("ui", {})["usage_mode"] = mode
+        self.cfg.save()
+        self._awaiting_mode_choice = False
+        if mode == "full":
+            self.set_layout("full")
+            msg = "Full Jarvis Mode saved. Window + voice + chat."
+        elif mode == "sidebar":
+            self.set_layout("sidebar")
+            msg = "Sidebar Companion Mode saved. Compact side panel."
+        else:
+            self.set_layout("compact")
+            msg = "Voice Only Mode saved. Minimal UI, voice focused."
+        self.ui.append_system(msg)
+        return msg
+
+    def set_layout(self, layout: str) -> str:
+        layout = (layout or "full").lower().strip()
+        if layout not in ("full", "floating", "sidebar", "compact"):
+            return "Layouts: full, floating, sidebar, compact."
+        self.state.ui_layout = layout
+        self.cfg.data.setdefault("ui", {})["layout"] = layout
+        if layout == "compact" or self.state.performance_mode:
+            self.state.animations_enabled = False
+        self.cfg.save()
+        try:
+            self.ui.apply_layout(layout)
+        except Exception:
+            pass
+        return f"Layout: {layout}."
 
     def share_project(self, method: str = "copy") -> None:
         """Settings → Share Jarvis: public project link only (no private data)."""
@@ -312,7 +375,6 @@ class Jarvis:
     def activate(self) -> None:
         if self.state.paused:
             self.resume_features()
-        # Mic permission for voice after activate
         on_act = self.cfg.get("on_activate") or {}
         self.state.active = True
         self.state.conversation_mode = bool(self.conv_cfg.get("followup_after_activate", True))
@@ -320,9 +382,24 @@ class Jarvis:
         self.state.set_task("ai_session", True)
         self.set_ui_state("thinking")
 
-        if on_act.get("open_app_window", True):
+        # Apply preferred usage mode layout
+        if self.state.usage_mode == "sidebar":
+            self.set_layout("sidebar")
+        elif self.state.usage_mode == "voice_only":
+            self.set_layout("compact")
+        else:
+            self.set_layout(self.state.ui_layout or "full")
+
+        if on_act.get("open_app_window", True) and self.state.usage_mode != "voice_only":
             self.ui.show_window(True)
             self.ui.set_active(True)
+        elif self.state.usage_mode == "voice_only":
+            self.ui.show_window(True)
+            self.ui.set_active(True)
+            try:
+                self.ui.apply_layout("compact")
+            except Exception:
+                pass
 
         if on_act.get("open_web_ai", False):
             threading.Thread(
@@ -336,16 +413,26 @@ class Jarvis:
             if self.ai.personality.mode == "friendly":
                 greet = self.cfg.get("greeting") or greet
 
-        self.log.event("activate", {})
+        self.log.event("activate", {"mode": self.state.usage_mode})
         if on_act.get("speak_greeting", True):
             self.speak(greet)
         else:
             self.ui.append_jarvis(greet)
 
-        # Follow-up listen without requiring wake word again
+        # Phase 2: ask how to use Jarvis unless preferred mode already saved
+        if not self.state.preferred_mode_saved:
+            ask = (
+                "How would you like to use Jarvis? "
+                "Say Full Jarvis Mode, Sidebar Companion Mode, or Voice Only Mode."
+            )
+            self._awaiting_mode_choice = True
+            self.speak(ask)
+        else:
+            self.ui.append_system(f"Using preferred mode: {self.state.usage_mode}")
+
         if on_act.get("start_listening", True) and self.state.voice_listen:
             if self.permissions.is_allowed("microphone"):
-                self._start_listen_loop(conversation=self.state.conversation_mode)
+                self._start_listen_loop(conversation=True)
             else:
                 self.ui.append_system(
                     "Voice follow-ups need microphone permission (Settings → Permissions)."
@@ -434,6 +521,9 @@ class Jarvis:
         if any(p in low for p in phrases) or low in ("activate", "jarvis"):
             self.activate()
             return
+        if is_standby_phrase(text) or is_exit_phrase(text):
+            self.standby()
+            return
         if any(
             x in low
             for x in (
@@ -446,9 +536,18 @@ class Jarvis:
         ):
             self.start_conversation_mode()
             return
-        if is_exit_phrase(text):
-            self.standby()
-            return
+
+        # Mode choice after activation
+        if self._awaiting_mode_choice:
+            if "sidebar" in low:
+                self.speak(self.set_usage_mode("sidebar"))
+                return
+            if "voice" in low:
+                self.speak(self.set_usage_mode("voice_only"))
+                return
+            if "full" in low:
+                self.speak(self.set_usage_mode("full"))
+                return
 
         if not self.state.active and not self.state.paused:
             self.state.active = True

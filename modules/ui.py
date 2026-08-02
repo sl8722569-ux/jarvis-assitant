@@ -292,7 +292,7 @@ class JarvisUI:
         f1.pack(fill="x", padx=12, pady=4)
         tk.Label(f1, text="Theme", fg=self.theme["muted"], bg=self.theme["bg"], width=14, anchor="w").pack(side="left")
         self._theme_name_var = tk.StringVar(value=self.state.theme)
-        om = tk.OptionMenu(f1, self._theme_name_var, *THEMES.keys(), command=self._theme_picked)
+        om = tk.OptionMenu(f1, self._theme_name_var, *sorted(THEMES.keys()), command=self._theme_picked)
         om.config(bg=self.theme["panel"], fg=self.theme["text"], highlightthickness=0)
         om.pack(side="left")
 
@@ -313,7 +313,7 @@ class JarvisUI:
         tk.Label(f3, text="Animation", fg=self.theme["muted"], bg=self.theme["bg"], width=14, anchor="w").pack(side="left")
         self._anim_var = tk.StringVar(value=self.state.animation)
         om3 = tk.OptionMenu(
-            f3, self._anim_var, "hud", "heartbeat", "waveform", "robot", "none", command=self._anim_picked
+            f3, self._anim_var, "hud", "heartbeat", "waveform", "robot", "minimal", "none", command=self._anim_picked
         )
         om3.config(bg=self.theme["panel"], fg=self.theme["text"], highlightthickness=0)
         om3.pack(side="left")
@@ -332,14 +332,33 @@ class JarvisUI:
 
         perm_box = tk.Frame(tab, bg=self.theme["panel"])
         perm_box.pack(fill="x", padx=12, pady=4)
+        # Layout / performance
+        lay = tk.Frame(tab, bg=self.theme["bg"])
+        lay.pack(fill="x", padx=12, pady=6)
+        tk.Label(lay, text="Layout", fg=self.theme["muted"], bg=self.theme["bg"], width=14, anchor="w").pack(side="left")
+        self._layout_var = tk.StringVar(value=self.state.ui_layout)
+        om4 = tk.OptionMenu(
+            lay, self._layout_var, "full", "floating", "sidebar", "compact", command=self._layout_picked
+        )
+        om4.config(bg=self.theme["panel"], fg=self.theme["text"], highlightthickness=0)
+        om4.pack(side="left")
+        self._perf_var = tk.BooleanVar(value=self.state.performance_mode)
+        tk.Checkbutton(
+            lay, text="Performance mode", variable=self._perf_var,
+            bg=self.theme["bg"], fg=self.theme["text"], selectcolor=self.theme["panel"],
+            command=self._perf_toggled,
+        ).pack(side="left", padx=10)
+
         for key, label in (
             ("microphone", "Microphone / voice"),
+            ("camera", "Camera"),
             ("file_access", "Safe file access"),
             ("screen", "Screen actions"),
             ("app_control", "Open/close apps"),
             ("web_open", "Open websites"),
             ("share_apps", "Share apps (WhatsApp Web)"),
             ("cloud_ai", "Cloud AI APIs (ChatGPT/Gemini)"),
+            ("notifications", "Notifications"),
         ):
             var = tk.BooleanVar(value=self.permissions.is_allowed(key))
             self.perm_vars[key] = var
@@ -565,6 +584,10 @@ class JarvisUI:
     def apply_theme(self, name: str) -> None:
         self.theme = get_theme(name)
         self.state.theme = name
+        if name == "light_mode":
+            self.state.light_mode = True
+        if name != "light_mode":
+            self.state.light_mode = False
 
         def _ui() -> None:
             if not self.root:
@@ -575,6 +598,51 @@ class JarvisUI:
             self.append_system(f"Theme applied: {self.theme.get('label', name)}. Restart JARVIS for full chrome refresh if needed.")
 
         self._safe(_ui)
+
+    def apply_layout(self, layout: str) -> None:
+        """Phase 2 layouts: full, floating, sidebar, compact — lightweight geometry only."""
+        self.state.ui_layout = layout
+
+        def _ui() -> None:
+            if not self.root:
+                return
+            self.root.deiconify()
+            if layout == "floating":
+                self.root.geometry("380x520+40+80")
+                self.root.attributes("-topmost", True)
+            elif layout == "sidebar":
+                # Right-side companion strip
+                try:
+                    sw = self.root.winfo_screenwidth()
+                    sh = self.root.winfo_screenheight()
+                    w = max(280, min(self.state.sidebar_width, 420))
+                    self.root.geometry(f"{w}x{sh - 80}+{sw - w - 8}+40")
+                except Exception:
+                    self.root.geometry("340x700+20+40")
+                self.root.attributes("-topmost", True)
+            elif layout == "compact":
+                self.root.geometry("360x280+60+60")
+                self.state.animations_enabled = False
+            else:
+                self.root.geometry("640x760+50+20")
+                try:
+                    self.root.attributes("-topmost", False)
+                except Exception:
+                    pass
+            self.append_system(f"Layout: {layout}")
+
+        self._safe(_ui)
+
+    def _layout_picked(self, name: str) -> None:
+        self.apply_layout(name)
+
+    def _perf_toggled(self) -> None:
+        self.state.performance_mode = bool(self._perf_var.get()) if getattr(self, "_perf_var", None) else False
+        if self.state.performance_mode:
+            self.state.animations_enabled = False
+            self.append_system("Performance mode ON — animations reduced for i3/8GB/HDD.")
+        else:
+            self.append_system("Performance mode OFF.")
 
     def show_window(self, expand: bool = True) -> None:
         def _ui() -> None:

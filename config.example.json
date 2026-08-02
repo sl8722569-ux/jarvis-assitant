@@ -1,7 +1,7 @@
 {
   "name": "J.A.R.V.I.S [EARLY ACCESS]",
-  "version": "3.0.0-early-access",
-  "phase": "1-early-access",
+  "version": "3.1.0-early-access-final-act",
+  "phase": "2-early-access-final-act",
   "project": {
     "official_url": "https://github.com/sl8722569-ux/jarvis-assitant",
     "share_text": "J.A.R.V.I.S [EARLY ACCESS] \u2014 Phase 1 [EARLY ACCESS] \u00b7 Phase 2 [EARLY ACCESS FINAL ACT]",
@@ -38,7 +38,9 @@
   "ui": {
     "theme": "midnight_hud",
     "animation": "hud",
-    "animations_enabled": true
+    "animations_enabled": true,
+    "layout": "full",
+    "usage_mode": "full"
   },
   "voice": {
     "enabled": true,

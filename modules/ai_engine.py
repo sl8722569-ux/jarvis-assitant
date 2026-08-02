@@ -68,8 +68,10 @@ class AIEngine:
 
         self.maybe_update_language(text)
         self.history.append({"role": "user", "content": text})
-        self.history = self.history[-16:]
+        # Phase 2: longer session memory (still light)
+        self.history = self.history[-28:]
         self._note_topic(text)
+        # Fast route: short intents skip deep local reasoning later via commands
 
         # Natural short acknowledgements
         if re.fullmatch(

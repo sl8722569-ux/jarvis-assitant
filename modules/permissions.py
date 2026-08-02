@@ -9,12 +9,14 @@ from typing import Any
 
 DEFAULTS = {
     "microphone": False,
+    "camera": False,
     "file_access": False,
     "screen": False,
     "app_control": False,
     "web_open": False,
     "share_apps": False,
     "cloud_ai": False,
+    "notifications": False,
 }
 
 
@@ -90,12 +92,14 @@ class PermissionManager:
             return True, ""
         labels = {
             "microphone": "microphone / voice input",
+            "camera": "camera access",
             "file_access": "file browsing (safe user folders only)",
             "screen": "screen-related actions",
             "app_control": "opening or closing apps",
             "web_open": "opening websites",
             "share_apps": "sharing via WhatsApp Web / similar apps",
             "cloud_ai": "optional cloud AI (ChatGPT/Gemini APIs)",
+            "notifications": "desktop notifications",
         }
         label = labels.get(key, key)
         return False, (

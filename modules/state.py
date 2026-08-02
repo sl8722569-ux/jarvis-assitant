@@ -31,6 +31,16 @@ class JarvisState:
     voice_rate: int = 165
     room_boost: bool = True
     animations_enabled: bool = True
+    # Phase 2 usage / layout
+    usage_mode: str = "full"  # full | sidebar | voice_only
+    ui_layout: str = "full"  # full | floating | sidebar | compact
+    performance_mode: bool = False
+    light_mode: bool = False
+    sidebar_side: str = "right"  # left | right
+    sidebar_width: int = 320
+    sidebar_auto_hide: bool = False
+    sidebar_transparency: float = 0.97
+    preferred_mode_saved: bool = False
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def set_task(self, name: str, on: bool = True) -> None:
@@ -70,4 +80,8 @@ class JarvisState:
                 "voice_rate": self.voice_rate,
                 "room_boost": self.room_boost,
                 "animations_enabled": self.animations_enabled,
+                "usage_mode": self.usage_mode,
+                "ui_layout": self.ui_layout,
+                "performance_mode": self.performance_mode,
+                "light_mode": self.light_mode,
             }
