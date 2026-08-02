@@ -36,6 +36,10 @@ class JarvisUI:
         on_permission_change: Callable | None = None,
         on_save_settings: Callable | None = None,
         on_share_project: Callable | None = None,
+        on_voice_diagnostics: Callable | None = None,
+        on_mic_test: Callable | None = None,
+        on_speaker_test: Callable | None = None,
+        on_report_bug: Callable | None = None,
     ):
         self.state = state
         self.permissions = permissions
@@ -55,7 +59,11 @@ class JarvisUI:
         self.on_animation = on_animation
         self.on_permission_change = on_permission_change
         self.on_save_settings = on_save_settings
-        self.on_share_project = on_share_project  # public project link only
+        self.on_share_project = on_share_project
+        self.on_voice_diagnostics = on_voice_diagnostics
+        self.on_mic_test = on_mic_test
+        self.on_speaker_test = on_speaker_test
+        self.on_report_bug = on_report_bug
 
         self.theme = get_theme(state.theme)
         self.root: tk.Tk | None = None
@@ -85,9 +93,9 @@ class JarvisUI:
     def _run(self) -> None:
         self.theme = get_theme(self.state.theme)
         self.root = tk.Tk()
-        self.root.title("JARVIS AI Assistant")
-        self.root.geometry("600x740+50+20")
-        self.root.minsize(460, 560)
+        self.root.title("J.A.R.V.I.S [EARLY ACCESS] — Phase 1 · Phase 2")
+        self.root.geometry("640x760+50+20")
+        self.root.minsize(480, 580)
         self.root.configure(bg=self.theme["bg"])
         try:
             self.root.attributes("-topmost", True)
@@ -103,10 +111,17 @@ class JarvisUI:
         header = tk.Frame(self.root, bg=self.theme["bg"])
         header.pack(fill="x", padx=12, pady=(10, 2))
         self._widgets_bg.append(header)
+        title_box = tk.Frame(header, bg=self.theme["bg"])
+        title_box.pack(side="left")
         tk.Label(
-            header, text="J.A.R.V.I.S", fg=self.theme["accent"], bg=self.theme["bg"],
+            title_box, text="J.A.R.V.I.S", fg=self.theme["accent"], bg=self.theme["bg"],
             font=("Segoe UI", 16, "bold"),
-        ).pack(side="left")
+        ).pack(anchor="w")
+        tk.Label(
+            title_box,
+            text="Phase 1 [EARLY ACCESS]  ·  Phase 2 [EARLY ACCESS FINAL ACT]",
+            fg=self.theme["muted"], bg=self.theme["bg"], font=("Segoe UI", 8),
+        ).pack(anchor="w")
         right = tk.Frame(header, bg=self.theme["bg"])
         right.pack(side="right")
         tk.Label(right, textvariable=self.state_var, fg=self.theme["muted"], bg=self.theme["bg"], font=("Consolas", 9)).pack(side="right", padx=8)
@@ -188,21 +203,25 @@ class JarvisUI:
 
         entry_row = tk.Frame(tab, bg=self.theme["bg"])
         entry_row.pack(fill="x", padx=4, pady=(2, 8))
+        # Normal-size type bar (chat-style height)
         self.entry = tk.Entry(
             entry_row, bg=self.theme["entry_bg"], fg=self.theme["text"],
-            insertbackground=self.theme["accent"], relief="flat", font=("Segoe UI", 11),
+            insertbackground=self.theme["accent"], relief="solid",
+            font=("Segoe UI", 12), bd=1, highlightthickness=1,
+            highlightbackground=self.theme["muted"], highlightcolor=self.theme["accent"],
         )
-        self.entry.pack(side="left", fill="x", expand=True, ipady=8, padx=(0, 6))
+        self.entry.pack(side="left", fill="x", expand=True, ipady=10, ipadx=8, padx=(0, 6))
         self.entry.bind("<Return>", self._submit_or_talk)
         tk.Button(
             entry_row, text="Send", command=self._submit, bg=self.theme["button"],
-            fg=self.theme["text"], relief="flat", padx=12, pady=6,
+            fg=self.theme["text"], relief="flat", padx=16, pady=8, font=("Segoe UI", 10),
         ).pack(side="right")
 
         self.append_system(
-            "v3 ready · themes · permissions · natural chat\n"
-            "Activate · Conversation · Talk/Enter · Standby\n"
-            "Settings tab: personality, theme, animation, permissions"
+            "J.A.R.V.I.S — personal Windows AI assistant\n"
+            "Phase 1 [EARLY ACCESS] · Phase 2 [EARLY ACCESS FINAL ACT]\n"
+            "Voice + chat · apps/web · privacy permissions · lightweight for i3/8GB/HDD\n"
+            "Enable Microphone in Settings for voice. Type below or use Talk."
         )
 
     def _build_control_tab(self) -> None:
@@ -341,10 +360,45 @@ class JarvisUI:
             bg=self.theme["button"], fg=self.theme["text"], relief="flat", padx=10, pady=6,
         ).pack(side="left", padx=8)
 
-        # Share Jarvis — public project link only (no personal data)
+        # Voice tools (Phase 2 bug-fix suite)
+        tk.Label(
+            tab, text="Voice tools", fg=self.theme["accent"], bg=self.theme["bg"],
+            font=("Segoe UI", 11, "bold"),
+        ).pack(anchor="w", padx=12, pady=(14, 4))
+        voice_row = tk.Frame(tab, bg=self.theme["bg"])
+        voice_row.pack(fill="x", padx=12, pady=4)
+        for text, fn in (
+            ("Voice Diagnostics", self.on_voice_diagnostics),
+            ("Mic test", self.on_mic_test),
+            ("Speaker test", self.on_speaker_test),
+        ):
+            tk.Button(
+                voice_row, text=text, command=lambda f=fn: self._cb(f),
+                bg=self.theme["panel"], fg=self.theme["text"], relief="flat", padx=8, pady=5,
+            ).pack(side="left", padx=3)
+
+        # Report bug / glitch
+        tk.Label(
+            tab, text="Report bug / glitch", fg=self.theme["accent"], bg=self.theme["bg"],
+            font=("Segoe UI", 11, "bold"),
+        ).pack(anchor="w", padx=12, pady=(14, 4))
+        bug_row = tk.Frame(tab, bg=self.theme["bg"])
+        bug_row.pack(fill="x", padx=12, pady=4)
+        self.bug_entry = tk.Entry(
+            bug_row, bg=self.theme["entry_bg"], fg=self.theme["text"],
+            insertbackground=self.theme["accent"], relief="solid", font=("Segoe UI", 11), bd=1,
+        )
+        self.bug_entry.pack(side="left", fill="x", expand=True, ipady=8, padx=(0, 6))
+        self.bug_entry.insert(0, "Describe the bug…")
+        tk.Button(
+            bug_row, text="Submit report", command=self._submit_bug,
+            bg=self.theme["danger"], fg=self.theme["text"], relief="flat", padx=10, pady=6,
+        ).pack(side="right")
+
+        # Share Jarvis — public project link only
         tk.Label(
             tab,
-            text="Share Jarvis (optional — public project link only)",
+            text="Share Jarvis (public project link only)",
             fg=self.theme["accent"],
             bg=self.theme["bg"],
             font=("Segoe UI", 11, "bold"),
@@ -486,6 +540,22 @@ class JarvisUI:
             v.set(False)
         if self.on_permission_change:
             self.on_permission_change("__all__", False)
+
+    def _submit_bug(self) -> None:
+        text = ""
+        if getattr(self, "bug_entry", None):
+            text = self.bug_entry.get().strip()
+            if text.lower().startswith("describe the bug"):
+                text = ""
+        if not text:
+            self.append_system("Type a bug description first.")
+            return
+        if self.on_report_bug:
+            self._cb(self.on_report_bug, text)
+        else:
+            self.append_system(f"Bug noted (local): {text}")
+        if getattr(self, "bug_entry", None):
+            self.bug_entry.delete(0, tk.END)
 
     def _on_close(self) -> None:
         if self.root:

@@ -99,6 +99,39 @@ class CommandRouter:
                 self.on_resume()
             return "Features resumed."
 
+        # Phase 2 voice diagnostics / tests
+        if re.search(r"\b(voice diagnostics|run diagnostics|diagnose voice|audio diagnostics)\b", t):
+            from .voice_diagnostics import run_full_diagnostics
+
+            rep = run_full_diagnostics(self._stt_ref() if hasattr(self, "_stt_ref") else None, self.tts, self.permissions)
+            # Prefer engine refs injected later — see jarvis wiring via setattr
+            stt = getattr(self, "stt", None)
+            rep = run_full_diagnostics(stt, self.tts, self.permissions)
+            return rep.as_text()
+        if re.search(r"\b(test microphone|microphone test|mic test)\b", t):
+            stt = getattr(self, "stt", None)
+            if not self.permissions.is_allowed("microphone"):
+                return "Microphone permission denied. Enable it in Settings first."
+            if stt is None:
+                return "STT engine not available."
+            return stt.test_microphone(2.0)
+        if re.search(r"\b(test speaker|speaker test|test speakers|audio test)\b", t):
+            if self.tts is None:
+                return "TTS engine not available."
+            return self.tts.test_speaker()
+        if re.search(r"\b(open mic settings|microphone settings|windows mic)\b", t):
+            from .voice_diagnostics import open_windows_mic_settings
+
+            return open_windows_mic_settings()
+        if re.search(r"\b(recover voice|fix voice|reset microphone)\b", t):
+            stt = getattr(self, "stt", None)
+            parts = []
+            if stt is not None:
+                parts.append("STT recovered." if stt.recover() else f"STT still down: {stt.last_error}")
+            if self.tts is not None:
+                parts.append("TTS recovered." if self.tts.recover() else f"TTS still down: {self.tts.last_error}")
+            return " ".join(parts) or "No voice engines to recover."
+
         # Permissions
         m = re.search(r"\b(?:allow|grant|enable)\s+([\w\s]+)$", t)
         if m and any(x in t for x in ("allow", "grant", "enable")):

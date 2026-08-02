@@ -41,7 +41,7 @@ class JarvisState:
                 self.tasks.remove(name)
 
     def set_ui_state(self, mode: str) -> None:
-        if mode in ("listening", "thinking", "speaking", "standby"):
+        if mode in ("listening", "thinking", "speaking", "standby", "error"):
             self.ui_state = mode
 
     def snapshot(self) -> dict[str, Any]:

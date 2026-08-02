@@ -38,6 +38,10 @@ from modules.tts_engine import TTSEngine
 from modules.ui import JarvisUI
 from modules.web_ops import WebOps
 from modules.share_project import share_jarvis
+from modules.voice_diagnostics import (
+    open_windows_mic_settings,
+    run_full_diagnostics,
+)
 
 
 class Jarvis:
@@ -142,7 +146,13 @@ class Jarvis:
             on_permission_change=self.permission_change,
             on_save_settings=self.save_settings,
             on_share_project=self.share_project,
+            on_voice_diagnostics=self.run_voice_diagnostics,
+            on_mic_test=self.test_microphone,
+            on_speaker_test=self.test_speaker,
+            on_report_bug=self.report_bug,
         )
+        # Let command router reach STT for voice tests
+        self.router.stt = self.stt
 
     # ----- UI helpers -----
     def set_ui_state(self, mode: str) -> None:
@@ -163,11 +173,54 @@ class Jarvis:
             self.ui.append_jarvis(text)
         self.set_ui_state("speaking")
         if self.state.voice_speak and self.tts.enabled:
-            self.tts.speak(text, block=True)
+            ok = self.tts.speak(text, block=True)
+            if not ok:
+                # UI said Speaking but no audio — surface clear error + recover
+                err = self.tts.last_error or "Unknown TTS failure"
+                self.log.warn(f"TTS silent failure: {err}")
+                self.ui.append_system(
+                    f"Audio error: {err}. Trying recovery… Run 'speaker test' if it continues."
+                )
+                self.set_ui_state("error" if hasattr(self.state, "ui_state") else "standby")
+                if self.tts.recover():
+                    ok2 = self.tts.speak(text, block=True)
+                    if not ok2:
+                        self.ui.append_system(
+                            "Still no audio. Check Windows volume / default speaker. "
+                            "Text replies still work."
+                        )
         if self.state.active:
             self.set_ui_state("listening" if self.state.conversation_mode else "standby")
         else:
             self.set_ui_state("standby")
+
+    def run_voice_diagnostics(self) -> None:
+        report = run_full_diagnostics(self.stt, self.tts, self.permissions)
+        self.ui.append_system(report.as_text())
+        self.log.event("voice_diagnostics", {"ok": report.ok, "mic": report.default_mic_name})
+        # Rebind STT to recommended mic if needed
+        if report.default_mic_index is not None and self.stt.device_index != report.default_mic_index:
+            self.stt.device_index = report.default_mic_index
+            self.stt.recover()
+            self.ui.append_system(f"STT rebound to mic [{report.default_mic_index}] {report.default_mic_name}")
+
+    def test_microphone(self) -> None:
+        if not self.permissions.is_allowed("microphone"):
+            self.ui.append_system(
+                "Microphone permission DENIED. Enable it in Settings → Permissions, "
+                "and allow desktop apps in Windows Privacy → Microphone."
+            )
+            return
+        msg = self.stt.test_microphone(2.0)
+        self.ui.append_system(msg)
+        self.log.event("mic_test", {"msg": msg[:120]})
+
+    def test_speaker(self) -> None:
+        self.set_ui_state("speaking")
+        msg = self.tts.test_speaker()
+        self.ui.append_system(msg)
+        self.set_ui_state("standby")
+        self.log.event("speaker_test", {"msg": msg[:120], "method": self.tts.last_method})
 
     def set_voice_volume(self, volume: float) -> None:
         self.tts.set_volume(volume)
@@ -235,6 +288,25 @@ class Jarvis:
         msg = share_jarvis(self.cfg.data, method=method or "copy")
         self.ui.append_system(msg)
         self.log.event("share_project", {"method": method or "copy", "private_data": False})
+
+    def report_bug(self, text: str) -> None:
+        """Save bug/glitch report locally (never uploads private data automatically)."""
+        from datetime import datetime
+
+        bugs = self.root / "data" / "bug_reports"
+        bugs.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        path = bugs / f"bug_{stamp}.txt"
+        body = (
+            f"J.A.R.V.I.S bug report\n"
+            f"Phase 1 [EARLY ACCESS] · Phase 2 [EARLY ACCESS FINAL ACT]\n"
+            f"Time: {datetime.now().isoformat(timespec='seconds')}\n"
+            f"Version: {self.cfg.get('version')}\n"
+            f"Report:\n{text}\n"
+        )
+        path.write_text(body, encoding="utf-8")
+        self.ui.append_system(f"Bug report saved locally: {path.name} (not shared online).")
+        self.log.event("bug_report", {"file": path.name})
 
     # ----- lifecycle -----
     def activate(self) -> None:
@@ -478,22 +550,24 @@ class Jarvis:
             if self.state.paused or not self.state.wake_word or self.state.active:
                 time.sleep(0.6)
                 continue
+            # Respect Windows + app permission — never listen without grant
             if not self.permissions.is_allowed("microphone"):
                 time.sleep(2.0)
                 continue
-            if not self.stt.available or not self.state.voice_listen:
+            if not self.state.voice_listen:
+                time.sleep(2.0)
+                continue
+            if not self.stt.available:
+                self.stt.recover()
                 time.sleep(2.0)
                 continue
             text = self.stt.listen_once(timeout=2.5, language="en")
             if not text:
                 time.sleep(float(self.cfg.get("idle_sleep_sec", 0.5)))
                 continue
-            low = text.lower()
-            if any(p in low for p in phrases) or (
-                "jarvis" in low
-                and any(w in low for w in ("activate", "online", "wake", "hey", "open", "start"))
-            ):
+            if self.stt.matches_wake_phrase(text, phrases):
                 self.log.info(f"Wake: {text}")
+                low = text.lower()
                 if "conversation" in low or "talk" in low:
                     self.start_conversation_mode()
                 else:
@@ -531,9 +605,11 @@ class Jarvis:
         self.ui.start()
         time.sleep(0.8)
         self.ui.append_system(
-            "Permissions default OFF — enable what you need in Settings.\n"
-            "Themes · Personality · Animations · Cloud AI optional\n"
-            f"Theme: {self.state.theme} · Personality: {self.state.personality}"
+            "J.A.R.V.I.S [EARLY ACCESS] · Phase 2\n"
+            "Permissions default OFF — enable Microphone in Settings for voice.\n"
+            "Voice tools: Voice Diagnostics · Mic test · Speaker test\n"
+            f"Theme: {self.state.theme} · Personality: {self.state.personality}\n"
+            f"Mic: [{self.stt.device_index}] {self.stt.device_name or 'detecting…'}"
         )
         threading.Thread(target=self.wake_word_loop, daemon=True).start()
         threading.Thread(target=self.hotkey_loop, daemon=True).start()
