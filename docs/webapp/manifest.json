@@ -1,12 +1,15 @@
 {
-  "name": "J.A.R.V.I.S [EARLY ACCESS]",
+  "name": "J.A.R.V.I.S",
   "short_name": "JARVIS",
+  "description": "J.A.R.V.I.S by INSAN CREATIONS — personal assistant app",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#07090d",
-  "theme_color": "#07090d",
+  "orientation": "portrait",
+  "background_color": "#05080f",
+  "theme_color": "#05080f",
   "icons": [
-    { "src": "../icons/jarvis-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "../icons/jarvis-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "../icons/jarvis-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "../icons/jarvis-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

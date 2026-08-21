@@ -1,0 +1,23 @@
+:root { --bg:#05080f; --panel:#0a1220; --cyan:#5ce1ff; --ink:#d7e6f5; --mute:#6a7a8a; }
+* { box-sizing: border-box; }
+html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; }
+.shell { display:flex; flex-direction:column; height:100%; max-width:520px; margin:0 auto; }
+header { display:flex; gap:.75rem; align-items:center; padding:.85rem; border-bottom:1px solid #1a2838; }
+header img { border-radius:10px; }
+header h1 { margin:0; font-size:1.1rem; letter-spacing:.08em; }
+header p { margin:0; color:var(--cyan); font-size:.75rem; }
+#install { margin-left:auto; background:var(--cyan); color:#041018; border:0; border-radius:8px; padding:.4rem .6rem; font-weight:700; }
+.modes { display:flex; gap:.4rem; padding:.5rem .85rem; }
+.modes button { flex:1; background:#0d1520; color:var(--mute); border:1px solid #1a2838; border-radius:8px; padding:.4rem; }
+.modes button.on { color:#041018; background:var(--cyan); border-color:var(--cyan); }
+.log { flex:1; overflow:auto; padding:.85rem; background:var(--panel); }
+.log p { margin:0 0 .75rem; }
+.log .j { color:var(--cyan); }
+.log .u { color:#9ef01a; }
+#bar { display:flex; gap:.4rem; padding:.7rem; }
+#bar input { flex:1; padding:.75rem; border-radius:8px; border:1px solid #1a2838; background:#0d1520; color:var(--ink); font-size:1rem; }
+#bar button { background:var(--cyan); color:#041018; border:0; border-radius:8px; padding:.75rem 1rem; font-weight:700; }
+.fine { margin:0; padding:0 .85rem .8rem; color:var(--mute); font-size:.75rem; }
+@media (min-width:900px) {
+  body.sidebar .shell { max-width:360px; margin:0 0 0 auto; border-left:1px solid #1a2838; min-height:100%; }
+}

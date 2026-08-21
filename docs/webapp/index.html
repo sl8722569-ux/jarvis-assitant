@@ -3,72 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>J.A.R.V.I.S Companion</title>
+  <title>J.A.R.V.I.S</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#05080f" />
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#07090d" />
-  <link rel="stylesheet" href="../assets/style.css" />
-  <style>
-    .chat { min-height: 42vh; max-height: 55vh; overflow: auto; background: #0b1016; border: 1px solid #243040; border-radius: 10px; padding: 1rem; }
-    .bar { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
-    .bar input { flex: 1; padding: 0.75rem; border-radius: 8px; border: 1px solid #243040; background: #10151c; color: #e7eef6; font-size: 1rem; }
-  </style>
+  <link rel="icon" href="../icons/jarvis-32.png" />
+  <link rel="apple-touch-icon" href="../icons/jarvis-192.png" />
+  <link rel="stylesheet" href="app.css" />
 </head>
 <body>
-  <header class="top">
-    <div class="brand">
-      <span class="orb"></span>
+  <div class="shell">
+    <header>
+      <img src="../icons/jarvis-64.png" width="44" height="44" alt="" />
       <div>
         <h1>J.A.R.V.I.S</h1>
-        <p class="tag">Web companion · Phase 2 [EARLY ACCESS FINAL ACT]</p>
+        <p id="status">STANDBY · INSAN CREATIONS</p>
       </div>
+      <button type="button" id="install" hidden>Install app</button>
+    </header>
+    <div class="modes">
+      <button type="button" data-mode="full" class="on">Full</button>
+      <button type="button" data-mode="sidebar">Sidebar</button>
+      <button type="button" data-mode="voice">Voice-like</button>
     </div>
-    <nav><a href="../index.html">Downloads</a></nav>
-  </header>
-  <main>
-    <p class="phases">Phase 1 [EARLY ACCESS] · Phase 2 [EARLY ACCESS FINAL ACT]</p>
-    <p class="lead">
-      This is the mobile/web companion: a small front door to J.A.R.V.I.S.
-      The full voice assistant (apps, files, microphone) is the <a href="../index.html">Windows ZIP</a>.
-      On Android or iPhone use your browser menu → Add to Home Screen.
-    </p>
-    <div class="chat" id="log">
-      <p><strong>JARVIS:</strong> Companion online. Ask about features, download, or how to install on Windows.</p>
-    </div>
-    <div class="bar">
-      <input id="q" placeholder="Type here…" />
-      <button class="btn primary" type="button" id="go">Send</button>
-    </div>
-  </main>
-  <script>
-    const log = document.getElementById("log");
-    const q = document.getElementById("q");
-    function say(who, t) {
-      const p = document.createElement("p");
-      p.innerHTML = "<strong>" + who + ":</strong> " + t;
-      log.appendChild(p);
-      log.scrollTop = log.scrollHeight;
-    }
-    function answer(t) {
-      const low = t.toLowerCase();
-      if (low.indexOf("feature") >= 0 || low.indexOf("what can") >= 0) {
-        return "Voice, text chat, English/Hindi/Punjabi, open apps and sites, system info, permissions, themes, plugins. Full list is on the main website.";
-      }
-      if (low.indexOf("download") >= 0 || low.indexOf("apk") >= 0 || low.indexOf("zip") >= 0) {
-        return "Open Downloads, pick your device (Windows, Android, iPhone, Linux, Web) and format (ZIP, APK, XAPK). Windows ZIP is the full app.";
-      }
-      if (low.indexOf("activate") >= 0) {
-        return "Yes sir — web companion is online. For Full Jarvis Mode install the Windows ZIP and say Jarvis Activate.";
-      }
-      return "I heard you. For the complete assistant, download the Windows ZIP from the main page.";
-    }
-    document.getElementById("go").onclick = function () {
-      const t = q.value.trim();
-      if (!t) return;
-      say("You", t);
-      q.value = "";
-      say("JARVIS", answer(t));
-    };
-    q.addEventListener("keydown", function (e) { if (e.key === "Enter") document.getElementById("go").click(); });
-  </script>
+    <div id="log" class="log"></div>
+    <form id="bar">
+      <input id="q" autocomplete="off" placeholder="Type to J.A.R.V.I.S…" />
+      <button type="submit">Send</button>
+    </form>
+    <p class="fine">App on every device: Install / Add to Home Screen. Desktop Windows also has JARVIS.exe.</p>
+  </div>
+  <script src="app.js"></script>
 </body>
 </html>
