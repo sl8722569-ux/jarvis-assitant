@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>J.A.R.V.I.S [EARLY ACCESS] — Download</title>
-  <meta name="description" content="Download J.A.R.V.I.S Early Access. Phase 1 and Phase 2 Final Act. Windows ZIP now. Android APK/XAPK and more formats by device." />
+  <meta name="description" content="J.A.R.V.I.S is a lightweight personal Windows AI assistant. Phase 1 Early Access and Phase 2 Early Access Final Act. Download ZIP, APK, or XAPK by device." />
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
@@ -18,32 +18,83 @@
       </div>
     </div>
     <nav>
+      <a href="#about">About</a>
+      <a href="#features">Features</a>
       <a href="#download">Download</a>
       <a href="#devices">Devices</a>
-      <a href="#about">About</a>
       <a href="https://github.com/sl8722569-ux/jarvis-assitant">GitHub</a>
     </nav>
   </header>
 
   <main>
-    <section class="hero">
+    <section class="hero" id="about">
       <p class="phases">Phase 1 [EARLY ACCESS] · Phase 2 [EARLY ACCESS FINAL ACT]</p>
-      <h2>A lightweight personal assistant for real hardware — not a cloud demo.</h2>
+      <h2>Your computer’s calm, local assistant — built to stay fast on ordinary laptops.</h2>
       <p class="lead">
-        Built for everyday PCs (including Intel i3, 8 GB RAM, HDD). Voice, chat, apps, privacy permissions.
-        Pick your device and package, then download.
+        <strong>J.A.R.V.I.S [EARLY ACCESS]</strong> is a personal AI helper for Windows that you run on your own machine.
+        It listens when you allow it, talks back, opens apps and sites, and helps with everyday PC tasks —
+        without needing a high-end GPU or a huge download. It was designed for real hardware such as an
+        Intel Core i3, 8 GB of RAM, and a hard disk, so it stays usable on school and home laptops.
+        Permissions start off: the microphone, files, and apps stay private until you turn them on.
+        Phase 1 shipped the core assistant. Phase 2 (Early Access Final Act) added voice reliability,
+        extra Windows tools, themes, plugins, and this download site.
       </p>
+    </section>
+
+    <section id="features" class="panel">
+      <h3>Features</h3>
+      <p class="hint">What the desktop app can do today (Windows ZIP is the full product).</p>
+      <div class="feat-grid">
+        <div>
+          <h4>Phase 1 [EARLY ACCESS]</h4>
+          <ul>
+            <li>Wake phrase: “Jarvis Activate”</li>
+            <li>Voice replies and text chat</li>
+            <li>Conversation mode (follow-up questions without repeating the wake phrase)</li>
+            <li>English, Hindi, and Punjabi</li>
+            <li>Open apps, folders, and websites</li>
+            <li>Launch ChatGPT, Gemini, Copilot, and similar AIs</li>
+            <li>System info, battery, gaming / performance modes</li>
+            <li>Safe file helper (your user folders only)</li>
+            <li>WhatsApp Web: prepare a message, confirm before anything is sent</li>
+            <li>Personality: Professional, Friendly, Playful</li>
+            <li>Themes, HUD / waveform / robot animations</li>
+            <li>Permission manager (grant and revoke anytime)</li>
+            <li>Share Jarvis — public project link only, never your private files</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Phase 2 [EARLY ACCESS FINAL ACT]</h4>
+          <ul>
+            <li>Microphone auto-detect, mic test, speaker test, voice diagnostics</li>
+            <li>Fixes for “Speaking” with no sound, plus TTS recovery</li>
+            <li>More reliable wake phrase matching</li>
+            <li>After activate: “How would you like to use Jarvis?”</li>
+            <li>Modes: Full Jarvis, Sidebar Companion, Voice Only (remembered)</li>
+            <li>“Jarvis Standby” to stop listening</li>
+            <li>Notes, clipboard, timers, calendar, brightness help, screenshots</li>
+            <li>Plugins: calculator, translator, weather, Steam helper, music helper</li>
+            <li>New themes (armor, green power, shield, cosmic, speed, light mode)</li>
+            <li>Layouts: full window, floating, sidebar, compact, performance mode</li>
+            <li>Bug / glitch report box in Settings</li>
+            <li>This website with device + ZIP / APK / XAPK picker</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
     <section id="download" class="panel">
       <h3>Download</h3>
-      <p class="hint">Choose device first, then package type. Only public project files are offered — no personal data.</p>
+      <p class="hint">
+        Pick <strong>which device</strong> you want, then the <strong>package</strong> (ZIP, APK, or XAPK).
+        Public project files only — no passwords, API keys, or personal settings.
+      </p>
 
       <div class="picker">
         <div>
-          <label for="device">Which device?</label>
+          <label for="device">Which device do you want?</label>
           <select id="device">
-            <option value="windows">Windows (10 / 11) — recommended now</option>
+            <option value="windows">Windows (10 / 11) — full app</option>
             <option value="android">Android phone / tablet</option>
             <option value="ios">iPhone / iPad</option>
             <option value="linux">Linux desktop</option>
@@ -67,43 +118,43 @@
         <a class="btn ghost" href="webapp/index.html">Open web companion</a>
         <a class="btn ghost" href="https://github.com/sl8722569-ux/jarvis-assitant/releases">All releases</a>
       </div>
+      <p class="small">Windows ZIP: unzip → install Python 3.11+ if needed → double-click <code>Start_JARVIS.bat</code>.</p>
     </section>
 
     <section id="devices" class="cards">
       <article>
         <h4>Windows</h4>
-        <p>Full desktop assistant. ZIP includes Python project + start script. Status: <strong>available</strong>.</p>
+        <p>Full assistant. Choose <strong>ZIP</strong>. Status: <strong>available</strong>.</p>
       </article>
       <article>
         <h4>Android</h4>
-        <p>APK / XAPK native installers are listed here. If a build is not ready, you’ll see an honest “coming soon” — use the web companion in the meantime.</p>
+        <p>Choose <strong>ZIP</strong> for the web companion package, or <strong>APK / XAPK</strong> when a native build is published. You can also open the web companion in Chrome.</p>
       </article>
       <article>
         <h4>iPhone / iPad</h4>
-        <p>Use the web companion in Safari (Add to Home Screen). Native IPA is future work, not auto-published.</p>
+        <p>Use <strong>Open web companion</strong>, then Share → Add to Home Screen. APK/XAPK are Android-only.</p>
       </article>
       <article>
         <h4>Linux &amp; Web</h4>
-        <p>Linux: same ZIP, run with Python. Web: responsive companion UI in the browser.</p>
+        <p>Linux: same ZIP, run with Python. Web: no install — open the companion in a browser.</p>
       </article>
     </section>
 
-    <section id="about" class="panel">
-      <h3>What you get</h3>
-      <ul class="facts">
-        <li>Voice: “Jarvis Activate” / “Jarvis Standby”</li>
-        <li>Text chat, English / Hindi / Punjabi</li>
-        <li>Permissions default off (mic, files, apps, web…)</li>
-        <li>No personal settings are inside public downloads</li>
-      </ul>
+    <section class="panel">
+      <h3>Privacy</h3>
+      <p class="lead">
+        Downloads from this site are the public project only. They do not include your chats, logs, API keys,
+        or Windows settings. On the PC app, microphone and file access stay off until you allow them in Settings.
+      </p>
       <p class="small">
-        Source: <a href="https://github.com/sl8722569-ux/jarvis-assitant">github.com/sl8722569-ux/jarvis-assitant</a>
+        Source code: <a href="https://github.com/sl8722569-ux/jarvis-assitant">github.com/sl8722569-ux/jarvis-assitant</a>
       </p>
     </section>
   </main>
 
   <footer>
-    J.A.R.V.I.S [EARLY ACCESS] · MIT License · Not affiliated with Marvel or other trademarks
+    J.A.R.V.I.S [EARLY ACCESS] · Phase 1 [EARLY ACCESS] · Phase 2 [EARLY ACCESS FINAL ACT] · MIT License
+    · Not affiliated with Marvel or other trademarks
   </footer>
   <script src="assets/app.js"></script>
 </body>

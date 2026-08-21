@@ -65,6 +65,13 @@ select, .btn {
 .cards h4 { margin: 0 0 0.4rem; color: var(--cyan); }
 .cards p { margin: 0; color: var(--muted); font-size: 0.92rem; }
 .facts { color: var(--muted); }
+.feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.feat-grid h4 { color: var(--cyan); margin: 0 0 0.5rem; }
+.feat-grid ul { margin: 0; padding-left: 1.1rem; color: var(--muted); }
+.feat-grid li { margin: 0.25rem 0; }
+@media (max-width: 700px) {
+  .feat-grid { grid-template-columns: 1fr; }
+}
 .small, footer { color: var(--muted); font-size: 0.8rem; }
 footer { text-align: center; padding: 2rem; border-top: 1px solid var(--line); position: relative; z-index: 1; }
 a { color: var(--cyan); }
