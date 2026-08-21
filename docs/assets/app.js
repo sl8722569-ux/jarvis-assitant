@@ -9,7 +9,7 @@
   const LOCAL = "downloads/";
   const LINKS = {
     windows: {
-      zip: LOCAL + "JARVIS-Windows-Phase2.zip",
+      zip: RELEASE + "JARVIS-Windows-Phase2.zip",
       apk: null,
       xapk: null,
     },
@@ -29,7 +29,7 @@
 
   const NOTES = {
     windows: {
-      zip: "Windows ZIP — full J.A.R.V.I.S [EARLY ACCESS] (Phase 1 + Phase 2). Unzip, then run Start_JARVIS.bat (Python 3.11+).",
+      zip: "Windows ZIP — full J.A.R.V.I.S. Unzip and run INSTALL-WINDOWS.bat (installer + shortcuts) or Start_JARVIS.bat. Also see Releases for the portable JARVIS.exe pack.",
       apk: "APK is an Android package. It is not used on Windows. Switch device to Android, or pick ZIP.",
       xapk: "XAPK is an Android package. Use ZIP for Windows.",
     },
