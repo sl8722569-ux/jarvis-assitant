@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>J.A.R.V.I.S [EARLY ACCESS] — Download</title>
+  <meta name="description" content="Download J.A.R.V.I.S Early Access. Phase 1 and Phase 2 Final Act. Windows ZIP now. Android APK/XAPK and more formats by device." />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="hud-grid"></div>
+  <header class="top">
+    <div class="brand">
+      <span class="orb"></span>
+      <div>
+        <h1>J.A.R.V.I.S</h1>
+        <p class="tag">Just A Rather Very Intelligent System</p>
+      </div>
+    </div>
+    <nav>
+      <a href="#download">Download</a>
+      <a href="#devices">Devices</a>
+      <a href="#about">About</a>
+      <a href="https://github.com/sl8722569-ux/jarvis-assitant">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="phases">Phase 1 [EARLY ACCESS] · Phase 2 [EARLY ACCESS FINAL ACT]</p>
+      <h2>A lightweight personal assistant for real hardware — not a cloud demo.</h2>
+      <p class="lead">
+        Built for everyday PCs (including Intel i3, 8 GB RAM, HDD). Voice, chat, apps, privacy permissions.
+        Pick your device and package, then download.
+      </p>
+    </section>
+
+    <section id="download" class="panel">
+      <h3>Download</h3>
+      <p class="hint">Choose device first, then package type. Only public project files are offered — no personal data.</p>
+
+      <div class="picker">
+        <div>
+          <label for="device">Which device?</label>
+          <select id="device">
+            <option value="windows">Windows (10 / 11) — recommended now</option>
+            <option value="android">Android phone / tablet</option>
+            <option value="ios">iPhone / iPad</option>
+            <option value="linux">Linux desktop</option>
+            <option value="web">Web browser (any device)</option>
+          </select>
+        </div>
+        <div>
+          <label for="format">Package format</label>
+          <select id="format">
+            <option value="zip">ZIP</option>
+            <option value="apk">APK</option>
+            <option value="xapk">XAPK</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="status" class="status" role="status"></div>
+
+      <div class="actions">
+        <button id="dl" class="btn primary" type="button">Download</button>
+        <a class="btn ghost" href="webapp/index.html">Open web companion</a>
+        <a class="btn ghost" href="https://github.com/sl8722569-ux/jarvis-assitant/releases">All releases</a>
+      </div>
+    </section>
+
+    <section id="devices" class="cards">
+      <article>
+        <h4>Windows</h4>
+        <p>Full desktop assistant. ZIP includes Python project + start script. Status: <strong>available</strong>.</p>
+      </article>
+      <article>
+        <h4>Android</h4>
+        <p>APK / XAPK native installers are listed here. If a build is not ready, you’ll see an honest “coming soon” — use the web companion in the meantime.</p>
+      </article>
+      <article>
+        <h4>iPhone / iPad</h4>
+        <p>Use the web companion in Safari (Add to Home Screen). Native IPA is future work, not auto-published.</p>
+      </article>
+      <article>
+        <h4>Linux &amp; Web</h4>
+        <p>Linux: same ZIP, run with Python. Web: responsive companion UI in the browser.</p>
+      </article>
+    </section>
+
+    <section id="about" class="panel">
+      <h3>What you get</h3>
+      <ul class="facts">
+        <li>Voice: “Jarvis Activate” / “Jarvis Standby”</li>
+        <li>Text chat, English / Hindi / Punjabi</li>
+        <li>Permissions default off (mic, files, apps, web…)</li>
+        <li>No personal settings are inside public downloads</li>
+      </ul>
+      <p class="small">
+        Source: <a href="https://github.com/sl8722569-ux/jarvis-assitant">github.com/sl8722569-ux/jarvis-assitant</a>
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    J.A.R.V.I.S [EARLY ACCESS] · MIT License · Not affiliated with Marvel or other trademarks
+  </footer>
+  <script src="assets/app.js"></script>
+</body>
+</html>

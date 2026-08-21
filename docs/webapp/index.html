@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>J.A.R.V.I.S Companion</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#07090d" />
+  <link rel="stylesheet" href="../assets/style.css" />
+  <style>
+    .chat { min-height: 40vh; background: #0b1016; border: 1px solid #243040; border-radius: 10px; padding: 1rem; }
+    .bar { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+    .bar input { flex: 1; padding: 0.75rem; border-radius: 8px; border: 1px solid #243040; background: #10151c; color: #e7eef6; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="orb"></span>
+      <div>
+        <h1>J.A.R.V.I.S</h1>
+        <p class="tag">Web companion · Phase 2 [EARLY ACCESS FINAL ACT]</p>
+      </div>
+    </div>
+    <nav><a href="../index.html">Downloads</a></nav>
+  </header>
+  <main>
+    <p class="phases">On Android/iPhone: browser menu → Add to Home Screen</p>
+    <div class="chat" id="log">
+      <p>Companion mode. Full voice desktop app is the Windows ZIP. This page is a lightweight web front for links and notes.</p>
+    </div>
+    <div class="bar">
+      <input id="q" placeholder="Type a command or question…" />
+      <button class="btn primary" type="button" id="go">Send</button>
+    </div>
+    <p class="hint">Full assistant (mic, apps, files) runs on Windows. This companion does not access your files.</p>
+  </main>
+  <script>
+    const log = document.getElementById("log");
+    const q = document.getElementById("q");
+    function say(who, t) {
+      const p = document.createElement("p");
+      p.innerHTML = "<strong>" + who + ":</strong> " + t;
+      log.appendChild(p);
+    }
+    document.getElementById("go").onclick = function () {
+      const t = q.value.trim();
+      if (!t) return;
+      say("You", t);
+      q.value = "";
+      const low = t.toLowerCase();
+      if (low.indexOf("download") >= 0) {
+        say("JARVIS", "Open the Downloads page and pick your device + ZIP / APK / XAPK.");
+        return;
+      }
+      if (low.indexOf("activate") >= 0) {
+        say("JARVIS", "Yes — web companion is online. For Full Jarvis Mode, install the Windows ZIP.");
+        return;
+      }
+      say("JARVIS", "I heard you. For full features, download the Windows build. GitHub: sl8722569-ux/jarvis-assitant");
+    };
+  </script>
+</body>
+</html>
