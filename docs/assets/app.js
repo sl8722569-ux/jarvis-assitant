@@ -6,14 +6,15 @@
 
   // Public GitHub release / docs paths (no personal files)
   const RELEASE = "https://github.com/sl8722569-ux/jarvis-assitant/releases/latest/download/";
+  const LOCAL = "downloads/";
   const LINKS = {
     windows: {
-      zip: RELEASE + "JARVIS-Windows-Phase2.zip",
+      zip: LOCAL + "JARVIS-Windows-Phase2.zip",
       apk: null,
       xapk: null,
     },
     android: {
-      zip: RELEASE + "JARVIS-Windows-Phase2.zip",
+      zip: LOCAL + "JARVIS-Android-WebCompanion.zip",
       apk: RELEASE + "JARVIS-Android.apk",
       xapk: RELEASE + "JARVIS-Android.xapk",
     },
