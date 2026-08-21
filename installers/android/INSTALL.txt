@@ -1,0 +1,16 @@
+J.A.R.V.I.S [EARLY ACCESS] — Android
+
+A native Play Store APK needs the Android SDK and a Java toolchain.
+This project is a Python desktop app; a full APK of that stack is not produced on a typical Windows laptop.
+
+What works on Android today
+1. Open the website in Chrome:
+   https://sl8722569-ux.github.io/jarvis-assitant/webapp/
+2. Menu (three dots) → Add to Home Screen / Install app
+   That installs the web companion (PWA).
+
+What to download from the site
+- ZIP: Android web companion package
+- APK / XAPK: listed on the site when a native build is published to GitHub Releases
+
+The complete voice/file/app assistant still runs on Windows (and Linux/macOS via their installers).

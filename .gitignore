@@ -69,3 +69,9 @@ assets/private/
 *.exe
 !scripts/**
 *.spec
+
+# PyInstaller
+dist/
+build/
+*.spec
+
