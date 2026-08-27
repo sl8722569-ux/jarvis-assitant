@@ -6,7 +6,7 @@
   <title>J.A.R.V.I.S [EARLY ACCESS] — Download</title>
   <link rel="icon" href="icons/jarvis-32.png" />
   <link rel="apple-touch-icon" href="icons/jarvis-192.png" />
-  <meta name="description" content="J.A.R.V.I.S is a lightweight personal Windows AI assistant. Phase 1 Early Access and Phase 2 Early Access Final Act. Download ZIP, APK, or XAPK by device." />
+  <meta name="description" content="J.A.R.V.I.S Early Access: Windows ZIP/portable assistant. Phones use the web companion (Add to Home Screen). No native APK/XAPK is published." />
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
@@ -79,7 +79,7 @@
             <li>New themes (armor, green power, shield, cosmic, speed, light mode)</li>
             <li>Layouts: full window, floating, sidebar, compact, performance mode</li>
             <li>Bug / glitch report box in Settings</li>
-            <li>This website with device + ZIP / APK / XAPK picker</li>
+            <li>This website with a device + ZIP / portable picker (no APK)</li>
           </ul>
         </div>
       </div>
@@ -88,8 +88,8 @@
     <section id="download" class="panel">
       <h3>Download</h3>
       <p class="hint">
-        Pick <strong>which device</strong> you want, then the <strong>package</strong> (ZIP, APK, or XAPK).
-        Public project files only — no passwords, API keys, or personal settings.
+        Pick <strong>which device</strong> you want, then the <strong>package</strong> (Windows ZIP or portable pack).
+        Phones use the web companion. Public project files only — no passwords, API keys, or personal settings.
       </p>
 
       <div class="picker">
@@ -99,14 +99,16 @@
             <option value="windows">Windows (10 / 11) — full app</option>
             <option value="android">Android phone / tablet</option>
             <option value="ios">iPhone / iPad</option>
-            <option value="linux">Linux desktop</option>
+            <option value="linux">Linux desktop (experimental)</option>
+            <option value="macos">macOS (experimental)</option>
             <option value="web">Web browser (any device)</option>
           </select>
         </div>
         <div>
           <label for="format">Package format</label>
           <select id="format">
-            <option value="zip">ZIP</option>
+            <option value="zip">ZIP (installer / source)</option>
+            <option value="portable">Windows portable pack</option>
           </select>
         </div>
       </div>
@@ -129,19 +131,19 @@
     <section id="devices" class="cards">
       <article>
         <h4>Windows</h4>
-        <p>Full assistant. Choose <strong>ZIP</strong>. Status: <strong>available</strong>.</p>
+        <p>Full assistant. Choose <strong>ZIP</strong> (installer) or <strong>portable pack</strong>. Status: <strong>available</strong>.</p>
       </article>
       <article>
         <h4>Android</h4>
-        <p>Choose <strong>ZIP</strong> for the web companion package, or <strong>APK / XAPK</strong> when a native build is published. You can also open the web companion in Chrome.</p>
+        <p>No native APK. Choose <strong>ZIP</strong> for the web companion, or open it in Chrome → Add to Home Screen.</p>
       </article>
       <article>
         <h4>iPhone / iPad</h4>
-        <p>Use <strong>Open web companion</strong>, then Share → Add to Home Screen. APK/XAPK are Android-only.</p>
+        <p>No native iOS app. Use <strong>Open web companion</strong>, then Share → Add to Home Screen.</p>
       </article>
       <article>
-        <h4>Linux &amp; Web</h4>
-        <p>Linux: same ZIP, run with Python. Web: no install — open the companion in a browser.</p>
+        <h4>Linux, macOS &amp; Web</h4>
+        <p>Linux/macOS: experimental Python scripts inside the Windows ZIP. Web: no install — open the companion in a browser.</p>
       </article>
     </section>
 

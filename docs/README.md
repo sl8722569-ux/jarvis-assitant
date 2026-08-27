@@ -1,8 +1,8 @@
 # J.A.R.V.I.S public website
 
-GitHub Pages site (device picker + ZIP / APK / XAPK).
+GitHub Pages site (device picker + Windows ZIP / portable pack + web companion).
 
-- Live (after Pages is on): `https://sl8722569-ux.github.io/jarvis-assitant/`
+- Live: `https://sl8722569-ux.github.io/jarvis-assitant/`
 - Downloads come from GitHub Releases (no personal files).
 
-Windows ZIP is the working desktop app today. Android APK/XAPK appear in the picker; files are attached when a native build is published.
+Windows ZIP/portable is the working desktop app today. There is **no native APK/XAPK**. Phones use the web companion (Add to Home Screen).
