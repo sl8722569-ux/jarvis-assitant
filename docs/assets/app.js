@@ -10,13 +10,14 @@
   const WIN_ZIP = RELEASE + "JARVIS-Windows-Phase2.zip";
   const WIN_PORTABLE = RELEASE + "JARVIS-Windows-Portable.exe-pack.zip";
 
+  const APK = RELEASE + "JARVIS-Android.apk";
   const LINKS = {
-    windows: { zip: WIN_ZIP, portable: WIN_PORTABLE },
-    android: { zip: COMP, portable: null },
-    ios: { zip: null, portable: null },
-    linux: { zip: WIN_ZIP, portable: null },
-    macos: { zip: WIN_ZIP, portable: null },
-    web: { zip: null, portable: null },
+    windows: { zip: WIN_ZIP, portable: WIN_PORTABLE, apk: null },
+    android: { zip: COMP, portable: null, apk: APK },
+    ios: { zip: null, portable: null, apk: null },
+    linux: { zip: WIN_ZIP, portable: null, apk: null },
+    macos: { zip: WIN_ZIP, portable: null, apk: null },
+    web: { zip: null, portable: null, apk: null },
   };
 
   const NOTES = {
@@ -25,8 +26,9 @@
       portable: "Portable pack with JARVIS.exe. Unzip and run; no installer required.",
     },
     android: {
-      zip: "Android web companion ZIP / PWA. There is no native APK. Chrome → Add to Home Screen.",
-      portable: "Portable pack is Windows-only. Pick ZIP for the Android web companion.",
+      zip: "Android web companion ZIP / PWA. Chrome → Add to Home Screen.",
+      portable: "Portable pack is Windows-only. Pick ZIP or APK for Android.",
+      apk: "Sideload APK: official WebView of the live companion (camera/mic). Not the Windows Python app. Not Play Store.",
     },
     ios: {
       zip: "No native iOS app. Opens the web companion — Safari → Share → Add to Home Screen.",

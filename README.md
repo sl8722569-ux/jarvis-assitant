@@ -3,7 +3,7 @@
 **Just A Rather Very Intelligent System** — a **lightweight personal AI assistant for Windows**, built to stay usable on modest hardware (Intel i3, 8 GB RAM, HDD).
 
 > **Phase status:** Early Access **v3.2.0** (Windows).  
-> Native Android APK/XAPK is **not** published. Phones use the **web companion** (Add to Home Screen).
+> Android APK is a **WebView of the live web companion** (sideload from Releases). It is not the Windows Python app. iPhone uses Add to Home Screen.
 
 ---
 
