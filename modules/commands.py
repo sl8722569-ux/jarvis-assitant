@@ -383,7 +383,9 @@ class CommandRouter:
             return self.ai.set_language("pa")
 
         # System volume
-        if re.search(r"\b(mute|unmute)\b", t) and "voice" not in t:
+        if re.search(r"\bunmute\b", t) and "voice" not in t:
+            return self.ops.set_volume(mute=False)
+        if re.search(r"\bmute\b", t) and "voice" not in t:
             return self.ops.set_volume(mute=True)
         if "volume up" in t or ("louder" in t and "speak" not in t):
             return self.ops.set_volume(direction="up")
@@ -400,6 +402,9 @@ class CommandRouter:
         if m:
             target = m.group(1).strip()
             if self.launcher.resolve_name(target):
+                ok, msg = self.permissions.require("web_open")
+                if not ok:
+                    return msg
                 return self.launcher.launch(target)
             if target in self.ops.FOLDER_MAP or target.startswith("folder "):
                 return self.ops.open_folder(target.replace("folder ", "").strip())

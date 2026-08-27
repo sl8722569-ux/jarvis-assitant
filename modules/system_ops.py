@@ -65,13 +65,14 @@ class SystemOps:
     def __init__(self, log: JarvisLogger | None = None):
         self.log = log
         self.user = os.environ.get("USERNAME", "")
+        self._muted = False
 
     def open_app(self, name: str) -> str:
         key = name.lower().strip()
         target = self.APP_MAP.get(key)
         if not target:
-            code, _ = _run(f'start "" "{name}"', shell=True)
-            return f"Tried to open {name}." if code == 0 else f"Could not open {name}."
+            known = ", ".join(sorted(self.APP_MAP.keys()))
+            return f"I only open known apps ({known}). I will not run arbitrary names."
         target = target.replace("{user}", self.user)
         if target.startswith("ms-settings"):
             _run(["cmd", "/c", "start", target])
@@ -102,7 +103,9 @@ class SystemOps:
 
     def open_folder(self, name: str) -> str:
         key = name.lower().strip()
-        path = self.FOLDER_MAP.get(key, name)
+        if key not in self.FOLDER_MAP:
+            return "Unknown folder. Try downloads, documents, desktop, or home."
+        path = self.FOLDER_MAP[key]
         p = Path(path)
         if p.exists():
             os.startfile(str(p))  # type: ignore[attr-defined]
@@ -110,12 +113,23 @@ class SystemOps:
         return f"Folder not found: {path}"
 
     def set_volume(self, level: int | None = None, mute: bool | None = None, direction: str | None = None) -> str:
+        def _key(code: int, times: int = 1) -> None:
+            for _ in range(times):
+                _run(
+                    f'powershell -NoProfile -Command "(New-Object -ComObject WScript.Shell).SendKeys([char]{code})"',
+                    shell=True,
+                )
+
         if mute is True:
-            _run(
-                'powershell -NoProfile -Command "(New-Object -ComObject WScript.Shell).SendKeys([char]173)"',
-                shell=True,
-            )
-            return "Toggled mute."
+            if not self._muted:
+                _key(173)
+                self._muted = True
+            return "Muted."
+        if mute is False:
+            if self._muted:
+                _key(173)
+                self._muted = False
+            return "Unmuted."
         if direction == "up":
             for _ in range(4):
                 _run(
@@ -131,9 +145,16 @@ class SystemOps:
                 )
             return "Volume down."
         if level is not None:
-            level = max(0, min(100, level))
-            return f"Volume target {level}% noted. Use volume up or down for fine control."
-        return "Specify volume up, down, or mute."
+            level = max(0, min(100, int(level)))
+            _key(174, 50)
+            steps = max(0, level // 2)
+            if steps:
+                _key(175, steps)
+            if self._muted:
+                _key(173)
+                self._muted = False
+            return f"Volume set near {level}%."
+        return "Specify volume up, down, mute, or unmute."
 
     def battery_info(self) -> str:
         try:

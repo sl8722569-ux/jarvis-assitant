@@ -15,8 +15,8 @@
     },
     android: {
       zip: LOCAL + "JARVIS-Android-WebCompanion.zip",
-      apk: RELEASE + "JARVIS-Android.apk",
-      xapk: RELEASE + "JARVIS-Android.xapk",
+      apk: null,
+      xapk: null,
     },
     ios: { zip: null, apk: null, xapk: null },
     linux: {
@@ -35,8 +35,8 @@
     },
     android: {
       zip: "ZIP of the project source. You can run the web companion now. Native APK/XAPK is offered when a build exists.",
-      apk: "Android APK (native installer). If the file is not published yet, you will see coming soon — use Web companion.",
-      xapk: "Android XAPK (split package). Same as APK: available when a build is published to Releases.",
+      apk: "No native APK is published. Use Web companion: Chrome → Add to Home Screen.",
+      xapk: "No native XAPK is published. Use Web companion: Chrome → Add to Home Screen.",
     },
     ios: {
       zip: "iOS does not install this ZIP as an app. Use the web companion in Safari → Share → Add to Home Screen.",

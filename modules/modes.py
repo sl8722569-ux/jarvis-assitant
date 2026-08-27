@@ -21,18 +21,10 @@ def _silent(cmd: list[str] | str, shell: bool = False) -> None:
 
 class ModeManager:
     HEAVY_PROCS = [
-        "msedge.exe",
-        "chrome.exe",
-        "M365Copilot.exe",
-        "OneDrive.exe",
-        "SearchHost.exe",
         "Widgets.exe",
         "YourPhone.exe",
-        "Skype.exe",
-        "Discord.exe",
-        "Spotify.exe",
-        "Teams.exe",
-        "ms-teams.exe",
+        "GameBar.exe",
+        "GameBarFTW.exe",
     ]
 
     def __init__(self, ops: SystemOps, log: JarvisLogger | None = None):
@@ -58,8 +50,8 @@ class ModeManager:
         if self.log:
             self.log.event("mode", {"name": "gaming"})
         return (
-            "Gaming mode on. Closed heavy background apps, set high performance power, "
-            "and enabled Game Mode. Ready for Steam or Don Bradman Cricket 14."
+            "Gaming mode on. Enabled Windows Game Mode and high-performance power. "
+            "Browsers and Teams were left running so your work is not killed."
         )
 
     def study_mode(self) -> str:

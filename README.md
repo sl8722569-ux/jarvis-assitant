@@ -1,9 +1,9 @@
-# J.A.R.V.I.S — Early Access (Phase 1)
+# J.A.R.V.I.S — Early Access
 
 **Just A Rather Very Intelligent System** — a **lightweight personal AI assistant for Windows**, built to stay usable on modest hardware (Intel i3, 8 GB RAM, HDD).
 
-> **Phase status:** End of **Early Access / Phase 1**  
-> Stable desktop prototype. Not yet a published Store app or multi-platform product.
+> **Phase status:** Early Access **v3.2.0** (Windows).  
+> Native Android APK/XAPK is **not** published. Phones use the **web companion** (Add to Home Screen).
 
 ---
 
@@ -72,8 +72,8 @@ JARVIS/
 
 ```bash
 # 1) Clone (after you publish)
-git clone https://github.com/YOUR_USERNAME/jarvis-assistant.git
-cd jarvis-assistant
+git clone https://github.com/sl8722569-ux/jarvis-assitant.git
+cd jarvis-assitant
 
 # 2) Virtual environment (recommended)
 python -m venv .venv

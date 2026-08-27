@@ -42,6 +42,7 @@ config.json
 
 # --- User runtime data (personal) ---
 data/permissions.json
+data/notes.txt
 data/startup_backup.json
 data/*.local.json
 data/user/

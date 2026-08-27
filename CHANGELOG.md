@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.2.0-early-access
+
+- Download truth: no fake APK/XAPK on latest Releases
+- Mute and unmute are separate; volume percent uses system volume keys
+- Open AI sites requires `web_open` permission
+- Unknown app names are refused (no arbitrary `start`)
+- Gaming mode no longer force-kills browsers or Teams
+- Version aligned with GitHub tag `v3.2.0-installers`
+
 ## 3.0.0-early-access — Phase 1 complete (Early Access)
 
 End of **J.A.R.V.I.S [EARLY ACCESS] / Phase 1**.
