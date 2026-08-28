@@ -21,6 +21,8 @@ class JarvisUI:
         permissions: PermissionManager,
         on_activate: Callable | None = None,
         on_text: Callable | None = None,
+        on_stop: Callable | None = None,
+        on_regen: Callable | None = None,
         on_voice_toggle: Callable | None = None,
         on_pause: Callable | None = None,
         on_resume: Callable | None = None,
@@ -45,6 +47,9 @@ class JarvisUI:
         self.permissions = permissions
         self.on_activate = on_activate
         self.on_text = on_text
+        self.on_stop = on_stop
+        self.on_regen = on_regen
+        self._last_reply = ""
         self.on_voice_toggle = on_voice_toggle
         self.on_pause = on_pause
         self.on_resume = on_resume
@@ -69,7 +74,7 @@ class JarvisUI:
         self.root: tk.Tk | None = None
         self.notebook: ttk.Notebook | None = None
         self.chat: scrolledtext.ScrolledText | None = None
-        self.entry: tk.Entry | None = None
+        self.entry: tk.Text | None = None
         self.status_var: tk.StringVar | None = None
         self.state_var: tk.StringVar | None = None
         self.panel_vars: dict[str, tk.StringVar] = {}
@@ -202,26 +207,42 @@ class JarvisUI:
             ).pack(side="left", padx=2)
 
         entry_row = tk.Frame(tab, bg=self.theme["bg"])
-        entry_row.pack(fill="x", padx=4, pady=(2, 8))
-        # Normal-size type bar (chat-style height)
-        self.entry = tk.Entry(
-            entry_row, bg=self.theme["entry_bg"], fg=self.theme["text"],
+        entry_row.pack(fill="x", padx=4, pady=(2, 4))
+        self.entry = tk.Text(
+            entry_row, height=3, wrap="word", bg=self.theme["entry_bg"], fg=self.theme["text"],
             insertbackground=self.theme["accent"], relief="solid",
             font=("Segoe UI", 12), bd=1, highlightthickness=1,
             highlightbackground=self.theme["muted"], highlightcolor=self.theme["accent"],
         )
-        self.entry.pack(side="left", fill="x", expand=True, ipady=10, ipadx=8, padx=(0, 6))
-        self.entry.bind("<Return>", self._submit_or_talk)
+        self.entry.pack(side="left", fill="x", expand=True, padx=(0, 6))
+        self.entry.bind("<Return>", self._on_return)
+        self._ph = "Type a command or question…"
+        self.entry.insert("1.0", self._ph)
+        self.entry.bind("<FocusIn>", self._ph_in)
+        self.entry.bind("<FocusOut>", self._ph_out)
         tk.Button(
-            entry_row, text="Send", command=self._submit, bg=self.theme["button"],
-            fg=self.theme["text"], relief="flat", padx=16, pady=8, font=("Segoe UI", 10),
+            entry_row, text="SEND", command=self._submit, bg=self.theme["button"],
+            fg=self.theme["text"], relief="flat", padx=16, pady=10, font=("Segoe UI", 10, "bold"),
         ).pack(side="right")
 
+        tools = tk.Frame(tab, bg=self.theme["bg"])
+        tools.pack(fill="x", padx=4, pady=(0, 8))
+        for text, cmd in (
+            ("Mic", self._click_mic),
+            ("Stop", self._click_stop),
+            ("Copy", self._click_copy),
+            ("Clear", self._click_clear),
+            ("Regenerate", self._click_regen),
+        ):
+            tk.Button(
+                tools, text=text, command=cmd, bg=self.theme["panel"], fg=self.theme["text"],
+                relief="flat", padx=8, pady=4, font=("Segoe UI", 8),
+            ).pack(side="left", padx=2)
+
         self.append_system(
-            "J.A.R.V.I.S — personal Windows AI assistant\n"
-            "Phase 1 [EARLY ACCESS] · Phase 2 [EARLY ACCESS FINAL ACT]\n"
-            "Voice + chat · apps/web · privacy permissions · lightweight for i3/8GB/HDD\n"
-            "Enable Microphone in Settings for voice. Type below or use Talk."
+            "J.A.R.V.I.S — type or speak. Enter sends · Shift+Enter new line.\n"
+            "Open installed apps first. If missing I will ask to install or open the official website.\n"
+            "English / Hindi / Punjabi. Enable Microphone in Settings for voice."
         )
 
     def _build_control_tab(self) -> None:
@@ -515,23 +536,59 @@ class JarvisUI:
     def _open_ai(self, name: str) -> None:
         self._cb(self.on_open_ai, name)
 
-    def _submit_or_talk(self, event=None) -> None:
+    def _entry_text(self) -> str:
         if not self.entry:
-            return
-        if not self.entry.get().strip():
-            self._click_mic()
-            return
+            return ""
+        t = self.entry.get("1.0", tk.END).strip()
+        if t == getattr(self, "_ph", ""):
+            return ""
+        return t
+
+    def _ph_in(self, _=None) -> None:
+        if self.entry and self.entry.get("1.0", tk.END).strip() == getattr(self, "_ph", ""):
+            self.entry.delete("1.0", tk.END)
+
+    def _ph_out(self, _=None) -> None:
+        if self.entry and not self.entry.get("1.0", tk.END).strip():
+            self.entry.insert("1.0", getattr(self, "_ph", ""))
+
+    def _on_return(self, event=None):
+        if event and (event.state & 0x0001):  # Shift
+            return None
         self._submit()
+        return "break"
 
     def _submit(self, event=None) -> None:
-        if not self.entry:
-            return
-        text = self.entry.get().strip()
-        self.entry.delete(0, tk.END)
+        text = self._entry_text()
         if not text:
             return
+        if self.entry:
+            self.entry.delete("1.0", tk.END)
         self.append_user(text)
         self._cb(self.on_text, text)
+
+    def _click_stop(self) -> None:
+        self._cb(self.on_stop)
+
+    def _click_copy(self) -> None:
+        if not self.root or not self._last_reply:
+            self.append_system("Nothing to copy.")
+            return
+        self.root.clipboard_clear()
+        self.root.clipboard_append(self._last_reply)
+        self.append_system("Copied last reply.")
+
+    def _click_clear(self) -> None:
+        if not self.chat:
+            return
+        self.chat.configure(state="normal")
+        self.chat.delete("1.0", tk.END)
+        self.chat.configure(state="disabled")
+        self._last_reply = ""
+        self.append_system("Conversation cleared. Type or speak — you do not need a microphone.")
+
+    def _click_regen(self) -> None:
+        self._cb(self.on_regen)
 
     def _vol_changed(self, _=None) -> None:
         if self.vol_var is not None and self.on_volume:
@@ -689,6 +746,7 @@ class JarvisUI:
         self._append("You", text, "user")
 
     def append_jarvis(self, text: str) -> None:
+        self._last_reply = text or ""
         self._append("JARVIS", text, "jarvis")
 
     def append_system(self, text: str) -> None:

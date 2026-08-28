@@ -200,6 +200,13 @@ class TTSEngine:
             "Check Windows volume, default playback device, and that the speaker is not muted."
         )
 
+    def stop(self) -> None:
+        try:
+            if self._engine is not None:
+                self._engine.stop()
+        except Exception:
+            pass
+
     def speak(self, text: str, block: bool = True) -> bool:
         """
         Speak text. Returns True if a backend accepted the speech.

@@ -18,22 +18,32 @@
       <img src="../icons/jarvis-64.png" width="44" height="44" alt="" />
       <div>
         <h1>J.A.R.V.I.S</h1>
-        <p id="status">STANDBY · INSAN CREATIONS</p>
+        <p id="status">STANDBY · type or speak</p>
       </div>
+      <select id="lang" title="Response language">
+        <option value="auto">Auto</option>
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="pa">Punjabi</option>
+      </select>
       <button type="button" id="install" hidden>Install app</button>
     </header>
-    <div class="modes">
-      <button type="button" data-mode="full" class="on">Full</button>
-      <button type="button" data-mode="sidebar">Sidebar</button>
-      <button type="button" data-mode="voice">Voice-like</button>
-    </div>
     <div id="log" class="log"></div>
+    <p class="fine" id="ai-st">This is the web companion. Windows app launching lives in JARVIS.exe.</p>
     <form id="bar">
-      <input id="q" autocomplete="off" placeholder="Type to J.A.R.V.I.S…" />
-      <button type="submit">Send</button>
+      <textarea id="q" rows="2" placeholder="Type a command or question…"></textarea>
+      <button type="submit" id="send">SEND</button>
     </form>
-    <p class="fine">App on every device: Install / Add to Home Screen. Desktop Windows also has JARVIS.exe.</p>
+    <div class="tools">
+      <button type="button" id="mic">Mic</button>
+      <button type="button" id="stop">Stop</button>
+      <button type="button" id="copy">Copy</button>
+      <button type="button" id="clear">Clear</button>
+      <button type="button" id="regen">Regenerate</button>
+    </div>
+    <p class="fine">Enter sends · Shift+Enter new line. Voice uses the browser if it supports speech recognition.</p>
   </div>
+  <script src="https://sl8722569-ux.github.io/insan-creations/js/bridge-client.js"></script>
   <script src="app.js"></script>
   <script src="https://sl8722569-ux.github.io/insan-creations/js/stats.js" data-app="jarvis"></script>
 </body>

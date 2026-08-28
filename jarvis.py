@@ -115,9 +115,14 @@ class Jarvis:
         self.stt = STTEngine(self.cfg.data, self.log)
         self.stt.set_language(primary)
 
+        from modules.task_board import TaskBoard
+
         self.stop = False
         self.session_lock = threading.Lock()
         self._listen_thread: threading.Thread | None = None
+        self.board = TaskBoard()
+        self._last_user = ""
+        self._generating = False
         self.conv_cfg = self.cfg.get("conversation") or {}
         self._awaiting_mode_choice = False
 
@@ -145,6 +150,7 @@ class Jarvis:
             plugins=self.plugins,
             on_usage_mode=self.set_usage_mode,
             on_layout=self.set_layout,
+            board=self.board,
         )
 
         self.ui = JarvisUI(
@@ -152,6 +158,8 @@ class Jarvis:
             permissions=self.permissions,
             on_activate=self.activate,
             on_text=self.handle_text_command,
+            on_stop=self.stop_generation,
+            on_regen=self.regenerate,
             on_voice_toggle=self.toggle_speak,
             on_pause=self.pause_features,
             on_resume=self.resume_features,
@@ -557,12 +565,34 @@ class Jarvis:
             self.state.set_task("conversation", True)
 
         self.state.last_heard = text
+        self._last_user = text
+        self._generating = True
         self.ai.maybe_update_language(text)
         self._sync_lang()
         self.set_ui_state("thinking")
         reply = self.router.handle(text)
-        if reply:
+        self._generating = False
+        if reply and not self.stop:
             self.speak(reply)
+
+    def stop_generation(self) -> None:
+        self.stop = True
+        self._generating = False
+        try:
+            if self.tts and hasattr(self.tts, "stop"):
+                self.tts.stop()
+        except Exception:
+            pass
+        self.ui.append_system("Stopped.")
+        self.set_ui_state("standby")
+        self.stop = False
+
+    def regenerate(self) -> None:
+        if not self._last_user:
+            self.ui.append_system("Nothing to regenerate.")
+            return
+        self.ui.append_system("Regenerating…")
+        self.handle_text_command(self._last_user)
 
     def talk_or_continue(self) -> None:
         ok, msg = self.permissions.require("microphone")

@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.1-phase1
+
+- Typing is first-class: Enter sends, Shift+Enter newline, Stop / Copy / Clear / Regenerate
+- Open installed apps first; if missing, ask to install (Store/winget) then official website
+- Multitask foundation: open A, B and C; task board; cancel / pause / continue
+- Hindi/Punjabi open phrases (kholo / खोलो / ਖੋਲ੍ਹੋ)
+- Web companion: same typing UX; browser speech optional; no fake Windows launches
+
 ## 3.2.0-early-access
 
 - Download truth: no fake APK/XAPK on latest Releases

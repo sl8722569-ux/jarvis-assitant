@@ -15,8 +15,11 @@ if TYPE_CHECKING:
     from .permissions import PermissionManager
     from .share_assistant import ShareAssistant
     from .system_ops import SystemOps
+    from .task_board import TaskBoard
     from .tts_engine import TTSEngine
     from .web_ops import WebOps
+
+from . import app_catalog
 
 
 class CommandRouter:
@@ -45,6 +48,7 @@ class CommandRouter:
         plugins=None,
         on_usage_mode: Callable[[str], None] | None = None,
         on_layout: Callable[[str], None] | None = None,
+        board: "TaskBoard | None" = None,
     ):
         self.ops = ops
         self.ai = ai
@@ -67,6 +71,7 @@ class CommandRouter:
         self.win = win
         self.smart = smart
         self.plugins = plugins
+        self.board = board
         self.on_usage_mode = on_usage_mode
         self.on_layout = on_layout
 
@@ -81,6 +86,18 @@ class CommandRouter:
         self.ai.maybe_update_language(raw)
         if self.set_ui_state:
             self.set_ui_state("thinking")
+
+        pending = self._handle_pending(raw, t)
+        if pending is not None:
+            return pending
+
+        tasks_cmd = self._handle_task_cmds(t)
+        if tasks_cmd is not None:
+            return tasks_cmd
+
+        opened = self._handle_open(raw, t)
+        if opened is not None:
+            return opened
 
         # Conversation
         if re.search(
@@ -397,25 +414,6 @@ class CommandRouter:
         if re.search(r"\b(system info|system status|pc status|resources)\b", t):
             return self.ops.system_info()
 
-        # Open / close apps (permission)
-        m = re.search(r"\b(?:open|launch|start|run)\s+(.+)$", t)
-        if m:
-            target = m.group(1).strip()
-            if self.launcher.resolve_name(target):
-                ok, msg = self.permissions.require("web_open")
-                if not ok:
-                    return msg
-                return self.launcher.launch(target)
-            if target in self.ops.FOLDER_MAP or target.startswith("folder "):
-                return self.ops.open_folder(target.replace("folder ", "").strip())
-            # website-ish
-            if "." in target and " " not in target:
-                return self.web.open_site(target)
-            ok, msg = self.permissions.require("app_control")
-            if not ok:
-                return msg
-            return self.ops.open_app(target)
-
         m = re.search(r"\b(?:close|kill|quit)\s+(.+)$", t)
         if m and "jarvis" not in m.group(1):
             ok, msg = self.permissions.require("app_control")
@@ -442,6 +440,178 @@ class CommandRouter:
 
         # Default: natural AI conversation (follow-ups supported via history)
         return self.ai.reply(raw, ui_state_cb=self.set_ui_state)
+
+    def _handle_pending(self, raw: str, t: str) -> str | None:
+        if not self.board or not self.board.pending:
+            return None
+        yes = bool(re.search(
+            r"\b(yes|yeah|yep|ok|okay|sure|do it|go ahead|confirm|haan|haaji|हां|ਹਾਂ|install)\b",
+            t,
+        )) or t in ("y", "yes", "ok")
+        no = bool(re.search(r"\b(no|nope|nah|cancel|don't|do not|nahi|नहीं|ਨਹੀਂ)\b", t)) or t in ("n", "no")
+        web = bool(re.search(r"\b(website|web|browser|site)\b", t))
+        pending = self.board.pending
+        item = pending.get("item")
+        task = self.board.get(pending.get("task_id") or 0)
+
+        if web or (yes and pending.get("step") == "ask_web"):
+            self.board.pending = None
+            url = (item or {}).get("web_app") or (item or {}).get("website")
+            if not url:
+                if task:
+                    task.status = "FAILED"
+                    task.detail = "No official website."
+                return "There is no official website configured for that app."
+            ok, msg = self.permissions.require("web_open")
+            if not ok:
+                return msg
+            self.web.open_site(url)
+            if task:
+                task.status = "COMPLETED"
+                task.detail = "Opened official website after confirmation."
+            return f"Opening the official website for {item.get('id')}."
+
+        if yes and pending.get("step") == "ask_install":
+            self.board.pending = None
+            result = app_catalog.try_install(item)
+            if "cannot install" in result.lower() or "no legitimate" in result.lower():
+                self.board.pending = {"step": "ask_web", "item": item, "task_id": pending.get("task_id")}
+                if task:
+                    task.status = "WAITING_FOR_CONFIRMATION"
+                    task.detail = "Install unavailable — asking for website."
+                return result + f" Sir, should I open {item.get('id')} on the website instead?"
+            if task:
+                task.status = "RUNNING"
+                task.detail = "Installer started (you must approve Windows/Store)."
+            return result
+
+        if no and pending.get("step") == "ask_install":
+            self.board.pending = {"step": "ask_web", "item": item, "task_id": pending.get("task_id")}
+            if task:
+                task.status = "WAITING_FOR_CONFIRMATION"
+                task.detail = "Install declined — asking for website."
+            return f"Sir, should I open {item.get('id')} on the website instead?"
+
+        if no and pending.get("step") == "ask_web":
+            self.board.pending = None
+            if task:
+                task.status = "CANCELLED"
+                task.detail = "User declined website."
+            return "Cancelled. I will not open it."
+
+        return None
+
+    def _handle_task_cmds(self, t: str) -> str | None:
+        if not self.board:
+            return None
+        if re.search(r"\b(what'?s running|task board|task status|running tasks)\b", t):
+            return self.board.report()
+        m = re.search(r"\bcancel task\s+(\d+)\b", t)
+        if m:
+            return self.board.cancel(int(m.group(1)))
+        if re.search(r"\b(cancel all|cancel all tasks)\b", t):
+            return self.board.cancel_all()
+        if re.fullmatch(r"pause", t) or t == "pause tasks":
+            self.board.paused = True
+            return "Tasks paused. Say continue to resume queued work."
+        if t in ("continue", "resume tasks"):
+            self.board.paused = False
+            return "Continuing. " + self.board.report()
+        return None
+
+    def _split_targets(self, blob: str) -> list[str]:
+        s = re.sub(r"\b(and|aur|te|&|ਤੇ|और)\b", ",", blob, flags=re.I)
+        return [p.strip(" .") for p in s.split(",") if p.strip()]
+
+    def _handle_open(self, raw: str, t: str) -> str | None:
+        m = re.search(
+            r"\b(?:open|launch|start|run)\s+(.+)$",
+            t,
+        )
+        m2 = re.search(
+            r"^(.+?)\s+(?:kholo|khol do|khol dena|chalu karo|खोलो|खोल दो|ਖੋਲ੍ਹੋ|ਖੋਲੋ)\s*[.!]?\s*$",
+            t,
+        )
+        if not m and not m2:
+            return None
+        blob = (m.group(1) if m else m2.group(1)).strip()
+        blob = re.sub(r"^(the\s+)?(app\s+)?", "", blob)
+        names = self._split_targets(blob)
+        if not names:
+            return "What should I open?"
+        lines = []
+        for name in names:
+            lines.append(self._open_one(name))
+        return "\n".join(lines)
+
+    def _open_one(self, name: str) -> str:
+        folder_key = name.replace("folder ", "").strip()
+        if folder_key in self.ops.FOLDER_MAP or name.startswith("folder "):
+            return self.ops.open_folder(folder_key)
+
+        if self.launcher.resolve_name(name):
+            ok, msg = self.permissions.require("web_open")
+            if not ok:
+                return msg
+            item_ai = self.launcher.resolve_name(name)
+            # Prefer installed AI app (launcher already does this) — still a real launch.
+            t = self.board.add(item_ai or name, "RUNNING") if self.board else None
+            reply = self.launcher.launch(name)
+            if t:
+                t.status = "COMPLETED" if "Opening" in reply else "FAILED"
+                t.detail = reply
+            return reply
+
+        item = app_catalog.resolve(name)
+        if item:
+            ok, msg = self.permissions.require("app_control")
+            if not ok:
+                return msg
+            path = app_catalog.installed_path(item)
+            if path or item.get("uri"):
+                t = self.board.add(item["id"], "RUNNING") if self.board else None
+                good, reply = app_catalog.launch_installed(item)
+                if t:
+                    t.status = "COMPLETED" if good else "FAILED"
+                    t.detail = reply
+                return reply
+            t = self.board.add(item["id"], "WAITING_FOR_CONFIRMATION") if self.board else None
+            if self.board:
+                self.board.pending = {
+                    "step": "ask_install",
+                    "item": item,
+                    "task_id": t.id if t else 0,
+                }
+            label = item["id"]
+            if item.get("winget_id") or item.get("store"):
+                return (
+                    f"Sir, {label} is not installed. Would you like me to install the app "
+                    f"from the official Store/winget? I will not install silently."
+                )
+            if item.get("web_app") or item.get("website"):
+                if self.board:
+                    self.board.pending = {
+                        "step": "ask_web",
+                        "item": item,
+                        "task_id": t.id if t else 0,
+                    }
+                return (
+                    f"Sir, {label} isn't installed on this PC (no official desktop package I can start). "
+                    "Should I open it on the official website instead?"
+                )
+            return f"Sir, {label} is not installed, and I have no official installer or website for it."
+
+        if "." in name and " " not in name:
+            return self.web.open_site(name)
+
+        ok, msg = self.permissions.require("app_control")
+        if not ok:
+            return msg
+        # Unknown name — do not run arbitrary start
+        return (
+            f"I don't have a safe launcher for '{name}'. "
+            "I only open known apps (Chrome, Edge, VS Code, Notepad, …) or official websites after you confirm."
+        )
 
     @staticmethod
     def _perm_key(phrase: str) -> str | None:
